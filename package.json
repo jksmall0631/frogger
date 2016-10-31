@@ -1,0 +1,29 @@
+{
+  "name": "frogger",
+  "version": "1.0.0",
+  "description": "frogger",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jksmall0631/frogger.git"
+  },
+  "keywords": [
+    "frogger"
+  ],
+  "author": "Josh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jksmall0631/frogger/issues"
+  },
+  "homepage": "https://github.com/jksmall0631/frogger#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.1.2",
+    "mocha-loader": "^1.0.0",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.16.2"
+  }
+}
