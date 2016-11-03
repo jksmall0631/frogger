@@ -235,38 +235,6 @@
 	  }
 	};
 
-	function keyDownHandler(e) {
-	  if (e.keyCode == 37) {
-	    if (!leftPressed) {
-	      leftPressed = true;
-	    }
-	  } else if (e.keyCode == 38) {
-	    if (!upPressed) {
-	      upPressed = true;
-	    }
-	  } else if (e.keyCode == 39) {
-	    if (!rightPressed) {
-	      rightPressed = true;
-	    }
-	  } else if (e.keyCode == 40) {
-	    if (!downPressed) {
-	      downPressed = true;
-	    }
-	  }
-	}
-
-	function keyUpHandler(e) {
-	  if (e.keyCode == 37) {
-	    leftPressed = false;
-	  } else if (e.keyCode == 38) {
-	    upPressed = false;
-	  } else if (e.keyCode == 39) {
-	    rightPressed = false;
-	  } else if (e.keyCode == 40) {
-	    downPressed = false;
-	  }
-	}
-
 	module.exports = Frog;
 
 /***/ },
