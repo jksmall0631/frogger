@@ -59,8 +59,6 @@
 	var frogImg = document.getElementById("frog-img");
 	var turtleImg = document.getElementById("turtle-img");
 	var thinLogImg = document.getElementById("thin-log-img");
-	var width = canvas.width;
-	var height = canvas.height;
 	var upPressed = false;
 	var downPressed = false;
 	var leftPressed = false;
@@ -202,7 +200,7 @@
 /* 1 */
 /***/ function(module, exports) {
 
-	
+
 
 	var Frog = function (x, y, height, width) {
 	  this.x = x;
