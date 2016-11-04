@@ -7,7 +7,7 @@ describe('Log', function () {
     assert.isFunction(Log);
   });
 
-  it('should instantiate our friend the frog', function () {
+  it('should instantiate our friend the log', function () {
     var log = new Log(0,0,2,50);
     assert.isObject(log);
   });
