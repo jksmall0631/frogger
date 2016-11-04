@@ -47,7 +47,7 @@
 	__webpack_require__(6);
 	mocha.setup("bdd");
 	__webpack_require__(14)
-	__webpack_require__(56);
+	__webpack_require__(59);
 	if(false) {
 		module.hot.accept();
 		module.hot.dispose(function() {
@@ -81,27 +81,133 @@
 	};
 
 	Frog.prototype.frogMovement = function (width, height, leftPressed, rightPressed, upPressed, downPressed) {
-	  if (leftPressed && this.x > 0) {
-	    this.x -= 50;
-	    leftPressed = false;
-	  } else if (rightPressed && this.x < width - this.width) {
-	    this.x += 50;
-	    rightPressed = false;
-	  } else if (upPressed && this.y > 0) {
-	    this.y -= 50;
-	    upPressed = false;
+	  if (leftPressed && this.x > 30) {
+	    this.frogLeft(leftPressed);
+	  } else if (rightPressed && this.x < width - 80) {
+	    this.frogRight(rightPressed);
+	  } else if (upPressed && this.y > 50) {
+	    this.frogUp(upPressed);
 	  } else if (downPressed && this.y < height - 100) {
-	    this.y += 50;
-	    downPressed = false;
+	    this.frogDown(downPressed);
 	  }
+	};
+
+	Frog.prototype.frogLeft = function (leftPressed) {
+	  this.x -= 50;
+	  leftPressed = false;
+	};
+
+	Frog.prototype.frogRight = function (rightPressed) {
+	  this.x += 50;
+	  rightPressed = false;
+	};
+
+	Frog.prototype.frogUp = function (upPressed) {
+	  this.y -= 50;
+	  upPressed = false;
+	};
+
+	Frog.prototype.frogDown = function (downPressed) {
+	  this.y += 50;
+	  downPressed = false;
 	};
 
 	module.exports = Frog;
 
 /***/ },
-/* 2 */,
-/* 3 */,
-/* 4 */,
+/* 2 */
+/***/ function(module, exports) {
+
+	function CarLeft(x, y, vx, width) {
+	  this.x = x;
+	  this.y = y;
+	  this.vx = vx;
+	  this.height = 50;
+	  this.width = width;
+	}
+
+	CarLeft.prototype.draw = function (ctx, leftCarImg) {
+	  ctx.fillStyle = 'transparent';
+	  ctx.drawImage(leftCarImg, this.x, this.y, this.width, this.height);
+	  return this;
+	};
+
+	CarLeft.prototype.move = function (width) {
+	  this.x += this.vx;
+	  if (this.x > width + 50) {
+	    this.x = -50;
+	    return this;
+	  }
+	};
+
+	module.exports = CarLeft;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	function CarRight(x, y, vx, width) {
+	  this.x = x;
+	  this.y = y;
+	  this.vx = vx;
+	  this.height = 50;
+	  this.width = width;
+	}
+
+	CarRight.prototype.draw = function (ctx, rightCarImg) {
+	  ctx.fillStyle = 'transparent';
+	  ctx.drawImage(rightCarImg, this.x, this.y, this.width, this.height);
+	  return this;
+	};
+
+	CarRight.prototype.move = function () {
+	  this.x += this.vx;
+	  if (this.x < -50) {
+	    this.x = 650;
+	    return this;
+	  }
+	};
+
+	module.exports = CarRight;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	function Log(x, y, vx, width) {
+	  this.x = x;
+	  this.y = y;
+	  this.vx = vx;
+	  this.height = 48;
+	  this.width = width;
+	}
+
+	Log.prototype.draw = function (ctx, thinLogImg) {
+	  ctx.drawImage(thinLogImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = "transparent";
+	  return this;
+	};
+
+	Log.prototype.move = function (width) {
+	  this.x += this.vx;
+	  if (this.x > width + 50) {
+	    this.x = -200;
+	    return this;
+	  }
+	};
+
+	function logCollusion() {
+	  allLogs.forEach(function (log, i) {
+	    if (frog.x < log.x + log.width && frog.x + frog.width > log.x && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
+	      frog.x = log.x + 1;
+	      frog.y = log.y + 1;
+	    }
+	  });
+	}
+
+	module.exports = Log;
+
+/***/ },
 /* 5 */,
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
@@ -391,6 +497,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	__webpack_require__(15);
+	__webpack_require__(56);
+	__webpack_require__(57);
+	__webpack_require__(58);
 
 /***/ },
 /* 15 */
@@ -402,6 +511,11 @@
 	describe('Frog', function () {
 	  it('should be a function', function () {
 	    assert.isFunction(Frog);
+	  });
+
+	  it('should instantiate our friend the frog', function () {
+	    var frog = new Frog(0, 0, 50, 50);
+	    assert.isObject(frog);
 	  });
 
 	  it('should have an x coordinate', function () {
@@ -422,6 +536,36 @@
 	  it('should have a height', function () {
 	    var frog = new Frog(0, 0, 50, 50);
 	    assert.equal(frog.height, 50);
+	  });
+
+	  it('should take its shape and form when drawn', function () {
+	    var frog = new Frog(0, 0, 50, 50);
+	    assert.isFunction(frog.drawFrog);
+	  });
+
+	  it('should move left when left arrow key is pressed', function () {
+	    var frog = new Frog(50, 0, 50, 50);
+	    assert.equal(frog.x, 50);
+	    frog.frogLeft();
+	    assert.equal(frog.x, 0);
+	  });
+
+	  it('should move right when right arrow key is pressed', function () {
+	    var frog = new Frog(0, 0, 50, 50);
+	    frog.frogRight();
+	    assert.equal(frog.x, 50);
+	  });
+
+	  it('should move up when up arrow key is pressed', function () {
+	    var frog = new Frog(0, 50, 50, 50);
+	    frog.frogUp();
+	    assert.equal(frog.y, 0);
+	  });
+
+	  it('should move down when down arrow key is pressed', function () {
+	    var frog = new Frog(0, 0, 50, 50);
+	    frog.frogDown();
+	    assert.equal(frog.y, 50);
 	  });
 	});
 
@@ -8735,6 +8879,132 @@
 /* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
+	const assert = __webpack_require__(16).assert;
+	var CarLeft = __webpack_require__(2);
+
+	describe('CarLeft', function () {
+	  it('should be a function', function () {
+	    assert.isFunction(CarLeft);
+	  });
+
+	  it('should instantiate a wayward car heading left', function () {
+	    var carLeft = new CarLeft(0, 0, 2, 50);
+	    assert.isObject(carLeft);
+	  });
+
+	  it('should have an x coordinate', function () {
+	    var carLeft = new CarLeft(0, 0, 2, 50);
+	    assert.equal(carLeft.x, 0);
+	  });
+
+	  it('should have a y coordinate', function () {
+	    var carLeft = new CarLeft(0, 0, 2, 50);
+	    assert.equal(carLeft.y, 0);
+	  });
+
+	  it('should have a velocity', function () {
+	    var carLeft = new CarLeft(0, 0, 2, 50);
+	    assert.equal(carLeft.vx, 2);
+	  });
+
+	  it('should have a height', function () {
+	    var carLeft = new CarLeft(0, 0, 2, 50);
+	    assert.equal(carLeft.height, 50);
+	  });
+
+	  it('should have a width', function () {
+	    var carLeft = new CarLeft(0, 0, 2, 50);
+	    assert.equal(carLeft.width, 50);
+	  });
+
+	  it('should spawn a new car when drawn', function () {
+	    var carLeft = new CarLeft(0, 0, 2, 50);
+	    assert.isFunction(carLeft.draw);
+	  });
+
+	  it('should always be moving 2px to the left', function () {
+	    var carLeft = new CarLeft(50, 0, 2, 50);
+	    carLeft.move();
+	    assert.equal(carLeft.x, 52);
+	  });
+	});
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const assert = __webpack_require__(16).assert;
+	var CarRight = __webpack_require__(3);
+
+	describe('CarRight', function () {
+	  it('should be a function', function () {
+	    assert.isFunction(CarRight);
+	  });
+
+	  it('should instantiate a wayward car heading left', function () {
+	    var carRight = new CarRight(0, 0, 2, 50);
+	    assert.isObject(carRight);
+	  });
+
+	  it('should have an x coordinate', function () {
+	    var carRight = new CarRight(0, 0, 2, 50);
+	    assert.equal(carRight.x, 0);
+	  });
+
+	  it('should have a y coordinate', function () {
+	    var carRight = new CarRight(0, 0, 2, 50);
+	    assert.equal(carRight.y, 0);
+	  });
+
+	  it('should have a velocity', function () {
+	    var carRight = new CarRight(0, 0, 2, 50);
+	    assert.equal(carRight.vx, 2);
+	  });
+
+	  it('should have a height', function () {
+	    var carRight = new CarRight(0, 0, 2, 50);
+	    assert.equal(carRight.height, 50);
+	  });
+
+	  it('should have a width', function () {
+	    var carRight = new CarRight(0, 0, 2, 50);
+	    assert.equal(carRight.width, 50);
+	  });
+
+	  it('should spawn a new car when drawn', function () {
+	    var carRight = new CarRight(0, 0, 2, 50);
+	    assert.isFunction(carRight.draw);
+	  });
+
+	  it('should always be moving 2px to the left', function () {
+	    var carRight = new CarRight(50, 0, 2, 50);
+	    carRight.move();
+	    assert.equal(carRight.x, 52);
+	  });
+	});
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const assert = __webpack_require__(16).assert;
+	var Log = __webpack_require__(4);
+
+	describe('Log', function () {
+	  it('should be a function', function () {
+	    assert.isFunction(Log);
+	  });
+
+	  it('should instantiate our friend the frog', function () {
+	    var log = new Log(0, 0, 2, 50);
+	    assert.isObject(log);
+	  });
+	});
+
+/***/ },
+/* 59 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(process) {process.nextTick(function() {
 		delete __webpack_require__.c[module.id];
 		if(typeof window !== "undefined" && window.mochaPhantomJS)
@@ -8743,10 +9013,10 @@
 			mocha.run();
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(57)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(60)))
 
 /***/ },
-/* 57 */
+/* 60 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser

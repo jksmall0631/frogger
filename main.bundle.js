@@ -67,10 +67,10 @@
 
 	requestAnimationFrame(function gameLoop() {
 	  ctx.clearRect(0, 0, width, height);
-	  allCars.forEach(function (car) {
-	    car.draw(ctx, leftCarImg).move();
+	  leftCar.forEach(function (car) {
+	    car.draw(ctx, leftCarImg).move(width);
 	  });
-	  allCars.forEach(function (car) {
+	  rightCar.forEach(function (car) {
 	    car.draw(ctx, rightCarImg).move(width);
 	  });
 	  allLogs.forEach(function (log) {
@@ -80,12 +80,27 @@
 	    turtle.draw(ctx, turtleImg).move();
 	  });
 	  frog.drawFrog(ctx, frogImg);
-	  carCollision();
+	  leftCarCollision();
+	  rightCarCollision();
 	  logCollusion();
 	  turtleCollusion();
+	  waterDeath();
 	  frog.frogMovement(width, height, leftPressed, rightPressed, upPressed, downPressed);
+	  movementCheck();
 	  requestAnimationFrame(gameLoop);
 	});
+
+	function movementCheck() {
+	  if (leftPressed) {
+	    leftPressed = false;
+	  } else if (rightPressed) {
+	    rightPressed = false;
+	  } else if (upPressed) {
+	    upPressed = false;
+	  } else if (downPressed) {
+	    downPressed = false;
+	  }
+	}
 
 	document.addEventListener('keyup', keyUpHandler, false);
 	document.addEventListener('keydown', keyDownHandler, false);
@@ -122,21 +137,22 @@
 	  }
 	}
 
-	var allCars = [];
+	var leftCar = [];
+	var rightCar = [];
 
-	allCars.push(new CarLeft(50, 550, 1, 50));
-	allCars.push(new CarLeft(250, 550, 1, 50));
-	allCars.push(new CarLeft(450, 550, 1, 50));
-	allCars.push(new CarRight(600, 500, -1, 50));
-	allCars.push(new CarRight(400, 500, -1, 50));
-	allCars.push(new CarRight(50, 500, -1, 50));
-	allCars.push(new CarLeft(0, 450, 1, 50));
-	allCars.push(new CarLeft(100, 450, 1, 50));
-	allCars.push(new CarLeft(400, 450, 1, 50));
-	allCars.push(new CarRight(400, 400, -1, 50));
-	allCars.push(new CarRight(150, 400, -1, 50));
-	allCars.push(new CarLeft(300, 350, 1, 50));
-	allCars.push(new CarLeft(100, 350, 1, 50));
+	leftCar.push(new CarLeft(50, 550, 1, 50));
+	leftCar.push(new CarLeft(250, 550, 1, 50));
+	leftCar.push(new CarLeft(450, 550, 1, 50));
+	rightCar.push(new CarRight(600, 500, -1, 50));
+	rightCar.push(new CarRight(400, 500, -1, 50));
+	rightCar.push(new CarRight(50, 500, -1, 50));
+	leftCar.push(new CarLeft(0, 450, 1, 50));
+	leftCar.push(new CarLeft(100, 450, 1, 50));
+	leftCar.push(new CarLeft(400, 450, 1, 50));
+	rightCar.push(new CarRight(400, 400, -1, 50));
+	rightCar.push(new CarRight(150, 400, -1, 50));
+	leftCar.push(new CarLeft(300, 350, 1, 50));
+	leftCar.push(new CarLeft(100, 350, 1, 50));
 
 	var allLogs = [];
 
@@ -159,30 +175,32 @@
 	allTurtles.push(new Turtle(350, 100, -1.5, 150));
 	allTurtles.push(new Turtle(650, 100, -1.5, 150));
 
-	//filler cars
-	// allCars.push(new CarLeft(50, 550, 1, 50));
-	// allCars.push(new CarLeft(250, 550, 1, 50));
-	// allCars.push(new CarLeft(450, 550, 1, 50));
-
-
-	function carCollision() {
-	  allCars.forEach(function (car, i) {
+	function leftCarCollision() {
+	  leftCar.forEach(function (car, i) {
 	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
 	      alert("GAME OVER");
 	      document.location.reload();
 	    }
-	    // if (frog.y <= 300) {
-	    //   alert("GAME OVER");
-	    //   document.location.reload();
-	    // }
 	  });
 	}
+
+	function rightCarCollision() {
+	  rightCar.forEach(function (car, i) {
+	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
+	      alert("GAME OVER");
+	      document.location.reload();
+	    }
+	  });
+	}
+
+	var collide = false;
 
 	function logCollusion() {
 	  allLogs.forEach(function (log, i) {
 	    if (frog.x < log.x + log.width && frog.x + frog.width > log.x && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
-	      frog.x = log.x + 1;
+	      frog.x = frog.x + log.vx;
 	      frog.y = log.y + 1;
+	      collide = true;
 	    }
 	  });
 	}
@@ -190,17 +208,29 @@
 	function turtleCollusion() {
 	  allTurtles.forEach(function (turtle, i) {
 	    if (frog.x < turtle.x + turtle.width && frog.x + frog.width > turtle.x && frog.y < turtle.y + turtle.height && frog.height + frog.y > turtle.y) {
-	      frog.x = turtle.x + 1;
+	      frog.x = frog.x + turtle.vx;
 	      frog.y = turtle.y + 1;
+	      collide = true;
 	    }
 	  });
+	}
+
+	function waterDeath() {
+	  if (frog.y < 300 && frog.y > 50) {
+	    if (collide === false) {
+	      alert("GAME OVER");
+	      document.location.reload();
+	    } else if (collide === true) {
+	      collide = false;
+	    }
+	  }
 	}
 
 /***/ },
 /* 1 */
 /***/ function(module, exports) {
 
-
+	
 
 	var Frog = function (x, y, height, width) {
 	  this.x = x;
@@ -218,19 +248,35 @@
 	};
 
 	Frog.prototype.frogMovement = function (width, height, leftPressed, rightPressed, upPressed, downPressed) {
-	  if (leftPressed && this.x > 0) {
-	    this.x -= 50;
-	    leftPressed = false;
-	  } else if (rightPressed && this.x < width - this.width) {
-	    this.x += 50;
-	    rightPressed = false;
-	  } else if (upPressed && this.y > 0) {
-	    this.y -= 50;
-	    upPressed = false;
+	  if (leftPressed && this.x > 30) {
+	    this.frogLeft(leftPressed);
+	  } else if (rightPressed && this.x < width - 80) {
+	    this.frogRight(rightPressed);
+	  } else if (upPressed && this.y > 50) {
+	    this.frogUp(upPressed);
 	  } else if (downPressed && this.y < height - 100) {
-	    this.y += 50;
-	    downPressed = false;
+	    this.frogDown(downPressed);
 	  }
+	};
+
+	Frog.prototype.frogLeft = function (leftPressed) {
+	  this.x -= 50;
+	  leftPressed = false;
+	};
+
+	Frog.prototype.frogRight = function (rightPressed) {
+	  this.x += 50;
+	  rightPressed = false;
+	};
+
+	Frog.prototype.frogUp = function (upPressed) {
+	  this.y -= 50;
+	  upPressed = false;
+	};
+
+	Frog.prototype.frogDown = function (downPressed) {
+	  this.y += 50;
+	  downPressed = false;
 	};
 
 	module.exports = Frog;
@@ -316,6 +362,15 @@
 	    return this;
 	  }
 	};
+
+	function logCollusion() {
+	  allLogs.forEach(function (log, i) {
+	    if (frog.x < log.x + log.width && frog.x + frog.width > log.x && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
+	      frog.x = log.x + 1;
+	      frog.y = log.y + 1;
+	    }
+	  });
+	}
 
 	module.exports = Log;
 
