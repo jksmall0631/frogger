@@ -42,9 +42,9 @@ describe('CarLeft', function () {
     assert.isFunction(carLeft.draw);
   });
 
-  it('should always be moving 2px to the left', function () {
+  it('should always be moving 2px to the right', function () {
     var carLeft = new CarLeft(50,0,2,50);
-    carLeft.move()
+    carLeft.move();
     assert.equal(carLeft.x, 52);
   });
 
