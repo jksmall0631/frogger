@@ -51,6 +51,7 @@
 	var CarRight = __webpack_require__(3);
 	var Log = __webpack_require__(4);
 	var Turtle = __webpack_require__(5);
+	var Score = __webpack_require__(6);
 
 	var width = canvas.width;
 	var height = canvas.height;
@@ -64,6 +65,7 @@
 	var leftPressed = false;
 	var rightPressed = false;
 	var frog = new Frog((width - 50) / 2, height - 100, 45, 50);
+	var score = new Score();
 
 	requestAnimationFrame(function gameLoop() {
 	  ctx.clearRect(0, 0, width, height);
@@ -80,6 +82,7 @@
 	    turtle.draw(ctx, turtleImg).move();
 	  });
 	  frog.drawFrog(ctx, frogImg);
+
 	  leftCarCollision();
 	  rightCarCollision();
 	  logCollusion();
@@ -87,6 +90,7 @@
 	  waterDeath();
 	  frog.frogMovement(width, height, leftPressed, rightPressed, upPressed, downPressed);
 	  movementCheck();
+	  score.draw(ctx);
 	  requestAnimationFrame(gameLoop);
 	});
 
@@ -401,6 +405,24 @@
 	};
 
 	module.exports = Turtle;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	
+
+	function Score() {}
+
+	Score.prototype.draw = function (ctx) {
+	  var updateScore = 0;
+	  ctx.fillStyle = "black";
+	  ctx.font = '30px Arial';
+	  ctx.fillText(updateScore.value, 450, 690);
+	  return this;
+	};
+
+	module.exports = Score;
 
 /***/ }
 /******/ ]);
