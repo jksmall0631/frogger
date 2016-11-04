@@ -52,6 +52,7 @@
 	var Log = __webpack_require__(4);
 	var Turtle = __webpack_require__(5);
 	var Score = __webpack_require__(6);
+	var GameOver = __webpack_require__(7);
 
 	var width = canvas.width;
 	var height = canvas.height;
@@ -60,12 +61,14 @@
 	var frogImg = document.getElementById("frog-img");
 	var turtleImg = document.getElementById("turtle-img");
 	var thinLogImg = document.getElementById("thin-log-img");
+	var deadFrogImg = document.getElementById("dead-frog-img");
 	var upPressed = false;
 	var downPressed = false;
 	var leftPressed = false;
 	var rightPressed = false;
 	var frog = new Frog((width - 50) / 2, height - 100, 45, 50);
 	var score = new Score();
+	var gameover = new GameOver();
 
 	requestAnimationFrame(function gameLoop() {
 	  ctx.clearRect(0, 0, width, height);
@@ -106,8 +109,15 @@
 	  }
 	}
 
+	document.addEventListener('keyup', spaceBar, false);
 	document.addEventListener('keyup', keyUpHandler, false);
 	document.addEventListener('keydown', keyDownHandler, false);
+
+	function spaceBar(e) {
+	  if (e.keycode == 32) {
+	    document.location.reload();
+	  }
+	}
 
 	function keyDownHandler(e) {
 	  if (e.keyCode == 37) {
@@ -182,8 +192,9 @@
 	function leftCarCollision() {
 	  leftCar.forEach(function (car, i) {
 	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
-	      alert("GAME OVER");
-	      document.location.reload();
+	      // alert("GAME OVER");
+	      gameover.draw(ctx, deadFrogImg, width, height);
+	      spaceBar();
 	    }
 	  });
 	}
@@ -191,8 +202,9 @@
 	function rightCarCollision() {
 	  rightCar.forEach(function (car, i) {
 	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
-	      alert("GAME OVER");
-	      document.location.reload();
+	      // alert("GAME OVER");
+	      gameover.draw(ctx, deadFrogImg, width, height);
+	      spaceBar();
 	    }
 	  });
 	}
@@ -222,8 +234,10 @@
 	function waterDeath() {
 	  if (frog.y < 300 && frog.y > 50) {
 	    if (collide === false) {
-	      alert("GAME OVER");
-	      document.location.reload();
+	      // alert("GAME OVER");
+	      // document.location.reload();
+	      gameover.draw(ctx, deadFrogImg, width, height);
+	      spaceBar();
 	    } else if (collide === true) {
 	      collide = false;
 	    }
@@ -423,6 +437,25 @@
 	};
 
 	module.exports = Score;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	function GameOver() {
+	  this.x = 0;
+	  this.y = 0;
+	  this.width = 600;
+	  this.height = 700;
+	}
+
+	GameOver.prototype.draw = function (ctx, deadFrogImg, width, height) {
+	  ctx.clearRect(0, 0, width, height);
+	  ctx.drawImage(deadFrogImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = 'transparent';
+	};
+
+	module.exports = GameOver;
 
 /***/ }
 /******/ ]);
