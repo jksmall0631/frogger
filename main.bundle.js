@@ -51,8 +51,12 @@
 	var CarRight = __webpack_require__(3);
 	var Log = __webpack_require__(4);
 	var Turtle = __webpack_require__(5);
-	var Score = __webpack_require__(6);
-	var GameOver = __webpack_require__(7);
+	var LilyPad = __webpack_require__(6);
+	var Score = __webpack_require__(7);
+	var GameOver = __webpack_require__(8);
+	var MainAudio = __webpack_require__(9);
+	var IntroAudio = __webpack_require__(10);
+	var StartScreen = __webpack_require__(11);
 
 	var width = canvas.width;
 	var height = canvas.height;
@@ -62,13 +66,63 @@
 	var turtleImg = document.getElementById("turtle-img");
 	var thinLogImg = document.getElementById("thin-log-img");
 	var deadFrogImg = document.getElementById("dead-frog-img");
-	var upPressed = false;
-	var downPressed = false;
-	var leftPressed = false;
-	var rightPressed = false;
+	var startScreenImg = document.getElementById("start-screen-img");
+	var froggerMusic = document.getElementById("main-audio");
+	var froggerIntro = document.getElementById("intro-audio");
 	var frog = new Frog((width - 50) / 2, height - 100, 45, 50);
 	var score = new Score();
 	var gameover = new GameOver();
+	var startScreen = new StartScreen();
+	var updateScore = 0;
+	var mainAudio = new MainAudio(froggerMusic);
+	var introAudio = new IntroAudio(froggerIntro);
+	var death = false;
+	var start = false;
+
+	document.addEventListener('keydown', function (e) {
+	  if (e.keyCode == 37) {
+	    e.preventDefault();
+	    frog.frogLeft();
+	  }
+	  if (e.keyCode == 38) {
+	    e.preventDefault();
+	    frog.frogUp();
+	    return updateScore += 10;
+	  }
+	  if (e.keyCode == 39) {
+	    e.preventDefault();
+	    frog.frogRight();
+	  }
+	  if (e.keyCode == 40) {
+	    e.preventDefault();
+	    frog.frogDown();
+	  }
+	});
+
+	function spaceBarReload() {
+	  document.addEventListener('keydown', function (e) {
+	    if (e.keyCode == 32) {
+	      e.preventDefault();
+	      // document.location.reload();
+	      updateScore = 0;
+	      frog.x = (width - 50) / 2;
+	      frog.y = height - 100;
+	      start = true;
+	      death = false;
+	      playMain(mainAudio);
+	    }
+	  });
+	}
+
+	function playMain(mainAudio) {
+	  froggerMusic.play();
+	}
+
+	function playIntro(introAudio) {
+	  froggerIntro.play();
+	}
+
+	// playMain(mainAudio);
 
 	requestAnimationFrame(function gameLoop() {
 	  ctx.clearRect(0, 0, width, height);
@@ -84,72 +138,21 @@
 	  allTurtles.forEach(function (turtle) {
 	    turtle.draw(ctx, turtleImg).move();
 	  });
+	  allLilyPads.forEach(function (lilypad) {
+	    lilypad.draw(ctx);
+	  });
 	  frog.drawFrog(ctx, frogImg);
-
 	  leftCarCollision();
 	  rightCarCollision();
 	  logCollusion();
 	  turtleCollusion();
+	  lilyPadCollusion();
 	  waterDeath();
-	  frog.frogMovement(width, height, leftPressed, rightPressed, upPressed, downPressed);
-	  movementCheck();
-	  score.draw(ctx);
+	  score.draw(ctx, updateScore);
+	  deathScreen();
+	  startTheScreen();
 	  requestAnimationFrame(gameLoop);
 	});
-
-	function movementCheck() {
-	  if (leftPressed) {
-	    leftPressed = false;
-	  } else if (rightPressed) {
-	    rightPressed = false;
-	  } else if (upPressed) {
-	    upPressed = false;
-	  } else if (downPressed) {
-	    downPressed = false;
-	  }
-	}
-
-	document.addEventListener('keyup', spaceBar, false);
-	document.addEventListener('keyup', keyUpHandler, false);
-	document.addEventListener('keydown', keyDownHandler, false);
-
-	function spaceBar(e) {
-	  if (e.keycode == 32) {
-	    document.location.reload();
-	  }
-	}
-
-	function keyDownHandler(e) {
-	  if (e.keyCode == 37) {
-	    if (!leftPressed) {
-	      leftPressed = true;
-	    }
-	  } else if (e.keyCode == 38) {
-	    if (!upPressed) {
-	      upPressed = true;
-	    }
-	  } else if (e.keyCode == 39) {
-	    if (!rightPressed) {
-	      rightPressed = true;
-	    }
-	  } else if (e.keyCode == 40) {
-	    if (!downPressed) {
-	      downPressed = true;
-	    }
-	  }
-	}
-
-	function keyUpHandler(e) {
-	  if (e.keyCode == 37) {
-	    leftPressed = false;
-	  } else if (e.keyCode == 38) {
-	    upPressed = false;
-	  } else if (e.keyCode == 39) {
-	    rightPressed = false;
-	  } else if (e.keyCode == 40) {
-	    downPressed = false;
-	  }
-	}
 
 	var leftCar = [];
 	var rightCar = [];
@@ -189,12 +192,20 @@
 	allTurtles.push(new Turtle(350, 100, -1.5, 150));
 	allTurtles.push(new Turtle(650, 100, -1.5, 150));
 
+	var allLilyPads = [];
+
+	allLilyPads.push(new LilyPad(90, 0));
+	allLilyPads.push(new LilyPad(190, 0));
+	allLilyPads.push(new LilyPad(290, 0));
+	allLilyPads.push(new LilyPad(390, 0));
+	allLilyPads.push(new LilyPad(490, 0));
+
 	function leftCarCollision() {
 	  leftCar.forEach(function (car, i) {
 	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
 	      // alert("GAME OVER");
 	      gameover.draw(ctx, deadFrogImg, width, height);
-	      spaceBar();
+	      death = true;
 	    }
 	  });
 	}
@@ -204,7 +215,7 @@
 	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
 	      // alert("GAME OVER");
 	      gameover.draw(ctx, deadFrogImg, width, height);
-	      spaceBar();
+	      death = true;
 	    }
 	  });
 	}
@@ -213,7 +224,7 @@
 
 	function logCollusion() {
 	  allLogs.forEach(function (log, i) {
-	    if (frog.x < log.x + log.width && frog.x + frog.width > log.x && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
+	    if (frog.x < log.x + log.width - 50 && frog.x + frog.width > log.x + 50 && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
 	      frog.x = frog.x + log.vx;
 	      frog.y = log.y + 1;
 	      collide = true;
@@ -223,7 +234,7 @@
 
 	function turtleCollusion() {
 	  allTurtles.forEach(function (turtle, i) {
-	    if (frog.x < turtle.x + turtle.width && frog.x + frog.width > turtle.x && frog.y < turtle.y + turtle.height && frog.height + frog.y > turtle.y) {
+	    if (frog.x < turtle.x + turtle.width - 50 && frog.x + frog.width > turtle.x + 50 && frog.y < turtle.y + turtle.height && frog.height + frog.y > turtle.y) {
 	      frog.x = frog.x + turtle.vx;
 	      frog.y = turtle.y + 1;
 	      collide = true;
@@ -231,16 +242,43 @@
 	  });
 	}
 
+	function lilyPadCollusion() {
+	  allLilyPads.forEach(function (lilypad, i) {
+	    if (frog.x < lilypad.x + lilypad.width && frog.x + frog.width > lilypad.x && frog.y < lilypad.y + lilypad.height && frog.height + frog.y > lilypad.y) {
+	      frog.x = lilypad.x - 15;
+	      frog.y = lilypad.y + 1;
+	      collide = true;
+	    }
+	  });
+	}
+
 	function waterDeath() {
-	  if (frog.y < 300 && frog.y > 50) {
+	  if (frog.y < 300) {
 	    if (collide === false) {
-	      // alert("GAME OVER");
-	      // document.location.reload();
 	      gameover.draw(ctx, deadFrogImg, width, height);
-	      spaceBar();
+	      death = true;
 	    } else if (collide === true) {
 	      collide = false;
 	    }
+	  }
+	}
+
+	window.onload = function () {
+	  startTheScreen();
+	};
+
+	function startTheScreen() {
+	  if (start === false) {
+	    startScreen.draw(ctx, startScreenImg, width, height);
+	    playIntro(introAudio);
+	    spaceBarReload();
+	  }
+	}
+
+	function deathScreen() {
+	  if (death === true) {
+	    gameover.draw(ctx, deadFrogImg, width, height);
+	    spaceBarReload();
 	  }
 	}
 
@@ -265,36 +303,26 @@
 	  ctx.closePath();
 	};
 
-	Frog.prototype.frogMovement = function (width, height, leftPressed, rightPressed, upPressed, downPressed) {
-	  if (leftPressed && this.x > 30) {
-	    this.frogLeft(leftPressed);
-	  } else if (rightPressed && this.x < width - 80) {
-	    this.frogRight(rightPressed);
-	  } else if (upPressed && this.y > 50) {
-	    this.frogUp(upPressed);
-	  } else if (downPressed && this.y < height - 100) {
-	    this.frogDown(downPressed);
+	Frog.prototype.frogLeft = function () {
+	  if (this.x >= 0 + this.width) {
+	    this.x -= 50;
 	  }
 	};
 
-	Frog.prototype.frogLeft = function (leftPressed) {
-	  this.x -= 50;
-	  leftPressed = false;
+	Frog.prototype.frogRight = function () {
+	  if (this.x + this.width <= 600 - this.width) {
+	    this.x += 50;
+	  }
 	};
 
-	Frog.prototype.frogRight = function (rightPressed) {
-	  this.x += 50;
-	  rightPressed = false;
-	};
-
-	Frog.prototype.frogUp = function (upPressed) {
+	Frog.prototype.frogUp = function () {
 	  this.y -= 50;
-	  upPressed = false;
 	};
 
-	Frog.prototype.frogDown = function (downPressed) {
-	  this.y += 50;
-	  downPressed = false;
+	Frog.prototype.frogDown = function () {
+	  if (this.y <= 550) {
+	    this.y += 50;
+	  }
 	};
 
 	module.exports = Frog;
@@ -381,15 +409,6 @@
 	  }
 	};
 
-	function logCollusion() {
-	  allLogs.forEach(function (log, i) {
-	    if (frog.x < log.x + log.width && frog.x + frog.width > log.x && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
-	      frog.x = log.x + 1;
-	      frog.y = log.y + 1;
-	    }
-	  });
-	}
-
 	module.exports = Log;
 
 /***/ },
@@ -424,22 +443,39 @@
 /* 6 */
 /***/ function(module, exports) {
 
+	function LilyPad(x, y) {
+	  this.x = x;
+	  this.y = y;
+	  this.height = 50;
+	  this.width = 20;
+	}
+
+	LilyPad.prototype.draw = function (ctx) {
+	  ctx.fillStyle = "transparent";
+	  ctx.fillRect(this.x, this.y, this.width, this.height);
+	};
+
+	module.exports = LilyPad;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
 	
 
 	function Score() {}
 
-	Score.prototype.draw = function (ctx) {
-	  var updateScore = 0;
-	  ctx.fillStyle = "black";
-	  ctx.font = '30px Arial';
-	  ctx.fillText(updateScore.value, 450, 690);
+	Score.prototype.draw = function (ctx, updateScore) {
+	  ctx.fillStyle = "white";
+	  ctx.font = '30px Krungthep';
+	  ctx.fillText(updateScore, 112, 686);
 	  return this;
 	};
 
 	module.exports = Score;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	function GameOver() {
@@ -456,6 +492,41 @@
 	};
 
 	module.exports = GameOver;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
+
+	var MainAudio = function () {};
+
+	module.exports = MainAudio;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	var IntroAudio = function () {};
+
+	module.exports = IntroAudio;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	function StartScreen() {
+	  this.x = 0;
+	  this.y = 0;
+	  this.width = 600;
+	  this.height = 700;
+	}
+
+	StartScreen.prototype.draw = function (ctx, startScreenImg, width, height) {
+	  ctx.clearRect(0, 0, width, height);
+	  ctx.drawImage(startScreenImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = 'transparent';
+	};
+
+	module.exports = StartScreen;
 
 /***/ }
 /******/ ]);
