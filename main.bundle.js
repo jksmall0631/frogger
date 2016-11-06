@@ -44,8 +44,7 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var canvas = document.getElementById("frogger");
-	var ctx = canvas.getContext("2d");
+	
 	var Frog = __webpack_require__(1);
 	var CarLeft = __webpack_require__(2);
 	var CarRight = __webpack_require__(3);
@@ -54,12 +53,13 @@
 	var LilyPad = __webpack_require__(6);
 	var Score = __webpack_require__(7);
 	var GameOver = __webpack_require__(8);
-	var MainAudio = __webpack_require__(9);
-	var IntroAudio = __webpack_require__(10);
-	var StartScreen = __webpack_require__(11);
+	var StartScreen = __webpack_require__(9);
 
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
 	var width = canvas.width;
 	var height = canvas.height;
+
 	var rightCarImg = document.getElementById("right-car-img");
 	var leftCarImg = document.getElementById("left-car-img");
 	var frogImg = document.getElementById("frog-img");
@@ -69,15 +69,21 @@
 	var startScreenImg = document.getElementById("start-screen-img");
 	var froggerMusic = document.getElementById("main-audio");
 	var froggerIntro = document.getElementById("intro-audio");
+	var deathMusic = document.getElementById("death-audio");
+
 	var frog = new Frog((width - 50) / 2, height - 100, 45, 50);
+	var frogA = new Frog(-5000, 0, 45, 50);
+	var frogB = new Frog(-5000, 0, 45, 50);
+	var frogC = new Frog(-5000, 0, 45, 50);
+	var frogD = new Frog(-5000, 0, 45, 50);
 	var score = new Score();
 	var gameover = new GameOver();
 	var startScreen = new StartScreen();
+
 	var updateScore = 0;
-	var mainAudio = new MainAudio(froggerMusic);
-	var introAudio = new IntroAudio(froggerIntro);
 	var death = false;
 	var start = false;
+	var counter = 0;
 
 	document.addEventListener('keydown', function (e) {
 	  if (e.keyCode == 37) {
@@ -99,33 +105,31 @@
 	  }
 	});
 
-	function spaceBarReload() {
-	  document.addEventListener('keydown', function (e) {
-	    if (e.keyCode == 32) {
-	      e.preventDefault();
-	      // document.location.reload();
-	      updateScore = 0;
-	      frog.x = (width - 50) / 2;
-	      frog.y = height - 100;
-	      start = true;
-	      death = false;
-	      playMain(mainAudio);
-	    }
-	  });
-	}
-
-	function playMain(mainAudio) {
-	  froggerMusic.play();
-	}
-
-	function playIntro(introAudio) {
-	  froggerIntro.play();
-	}
-
-	// playMain(mainAudio);
-
 	requestAnimationFrame(function gameLoop() {
 	  ctx.clearRect(0, 0, width, height);
+	  objectLoops();
+	  drawings();
+	  leftCarCollision();
+	  rightCarCollision();
+	  logCollusion();
+	  turtleCollusion();
+	  lilyPadCollusion();
+	  waterDeath();
+	  deathScreen();
+	  startTheScreen();
+	  requestAnimationFrame(gameLoop);
+	});
+
+	function drawings() {
+	  frog.drawFrog(ctx, frogImg);
+	  frogA.drawFrog(ctx, frogImg);
+	  frogB.drawFrog(ctx, frogImg);
+	  frogC.drawFrog(ctx, frogImg);
+	  frogD.drawFrog(ctx, frogImg);
+	  score.draw(ctx, updateScore);
+	}
+
+	function objectLoops() {
 	  leftCar.forEach(function (car) {
 	    car.draw(ctx, leftCarImg).move(width);
 	  });
@@ -141,18 +145,7 @@
 	  allLilyPads.forEach(function (lilypad) {
 	    lilypad.draw(ctx);
 	  });
-	  frog.drawFrog(ctx, frogImg);
-	  leftCarCollision();
-	  rightCarCollision();
-	  logCollusion();
-	  turtleCollusion();
-	  lilyPadCollusion();
-	  waterDeath();
-	  score.draw(ctx, updateScore);
-	  deathScreen();
-	  startTheScreen();
-	  requestAnimationFrame(gameLoop);
-	});
+	}
 
 	var leftCar = [];
 	var rightCar = [];
@@ -224,7 +217,7 @@
 
 	function logCollusion() {
 	  allLogs.forEach(function (log, i) {
-	    if (frog.x < log.x + log.width - 50 && frog.x + frog.width > log.x + 50 && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
+	    if (frog.x < log.x + log.width - 30 && frog.x + frog.width > log.x + 30 && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
 	      frog.x = frog.x + log.vx;
 	      frog.y = log.y + 1;
 	      collide = true;
@@ -234,7 +227,7 @@
 
 	function turtleCollusion() {
 	  allTurtles.forEach(function (turtle, i) {
-	    if (frog.x < turtle.x + turtle.width - 50 && frog.x + frog.width > turtle.x + 50 && frog.y < turtle.y + turtle.height && frog.height + frog.y > turtle.y) {
+	    if (frog.x < turtle.x + turtle.width - 20 && frog.x + frog.width > turtle.x + 20 && frog.y < turtle.y + turtle.height && frog.height + frog.y > turtle.y) {
 	      frog.x = frog.x + turtle.vx;
 	      frog.y = turtle.y + 1;
 	      collide = true;
@@ -248,6 +241,21 @@
 	      frog.x = lilypad.x - 15;
 	      frog.y = lilypad.y + 1;
 	      collide = true;
+	      frog.x = (width - 50) / 2;
+	      frog.y = height - 100;
+	      counter++;
+	      if (counter === 1) {
+	        frogA.x = lilypad.x - 15;
+	      } else if (counter === 2) {
+	        frogB.x = lilypad.x - 15;
+	      } else if (counter === 3) {
+	        frogC.x = lilypad.x - 15;
+	      } else if (counter === 4) {
+	        frogD.x = lilypad.x - 15;
+	      } else if (counter === 5) {
+	        alert('you win');
+	      }
+	      return updateScore += 90;
 	    }
 	  });
 	}
@@ -263,23 +271,50 @@
 	  }
 	}
 
-	window.onload = function () {
-	  startTheScreen();
-	};
+	function spaceBarReload() {
+	  document.addEventListener('keydown', function (e) {
+	    if (e.keyCode == 32) {
+	      e.preventDefault();
+	      // document.location.reload();
+	      updateScore = 0;
+	      frog.x = (width - 50) / 2;
+	      frog.y = height - 100;
+	      start = true;
+	      death = false;
+	      playMain();
+	    }
+	  });
+	}
 
 	function startTheScreen() {
 	  if (start === false) {
 	    startScreen.draw(ctx, startScreenImg, width, height);
-	    playIntro(introAudio);
+	    playIntro();
 	    spaceBarReload();
 	  }
 	}
 
 	function deathScreen() {
 	  if (death === true) {
+	    playDeath();
 	    gameover.draw(ctx, deadFrogImg, width, height);
 	    spaceBarReload();
 	  }
+	}
+
+	function playMain() {
+	  deathMusic.pause();
+	  froggerIntro.pause();
+	  froggerMusic.play();
+	}
+
+	function playIntro() {
+	  froggerIntro.play();
+	}
+
+	function playDeath() {
+	  froggerMusic.pause();
+	  deathMusic.play();
 	}
 
 /***/ },
@@ -424,8 +459,8 @@
 	}
 
 	Turtle.prototype.draw = function (ctx, turtleImg) {
-	  ctx.fillStyle = 'transparent';
 	  ctx.drawImage(turtleImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = 'transparent';
 	  return this;
 	};
 
@@ -495,22 +530,6 @@
 
 /***/ },
 /* 9 */
-/***/ function(module, exports) {
-
-	var MainAudio = function () {};
-
-	module.exports = MainAudio;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports) {
-
-	var IntroAudio = function () {};
-
-	module.exports = IntroAudio;
-
-/***/ },
-/* 11 */
 /***/ function(module, exports) {
 
 	function StartScreen() {
