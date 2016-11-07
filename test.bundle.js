@@ -60,10 +60,9 @@
 	}
 
 /***/ },
-/* 1 */
+/* 1 */,
+/* 2 */
 /***/ function(module, exports) {
-
-	
 
 	var Frog = function (x, y, height, width) {
 	  this.x = x;
@@ -105,7 +104,7 @@
 	module.exports = Frog;
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports) {
 
 	function CarLeft(x, y, vx, width) {
@@ -133,7 +132,7 @@
 	module.exports = CarLeft;
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports) {
 
 	function CarRight(x, y, vx, width) {
@@ -161,7 +160,7 @@
 	module.exports = CarRight;
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	function Log(x, y, vx, width) {
@@ -189,7 +188,6 @@
 	module.exports = Log;
 
 /***/ },
-/* 5 */,
 /* 6 */,
 /* 7 */,
 /* 8 */,
@@ -219,8 +217,8 @@
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
-		module.hot.accept("!!/Users/dylanavery/Desktop/Turing/frogger/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/dylanavery/Desktop/Turing/frogger/node_modules/mocha/mocha.css", function() {
-			var newContent = require("!!/Users/dylanavery/Desktop/Turing/frogger/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/dylanavery/Desktop/Turing/frogger/node_modules/mocha/mocha.css");
+		module.hot.accept("!!/Users/joshuakylesmall/turing/frogger/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/joshuakylesmall/turing/frogger/node_modules/mocha/mocha.css", function() {
+			var newContent = require("!!/Users/joshuakylesmall/turing/frogger/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/joshuakylesmall/turing/frogger/node_modules/mocha/mocha.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -493,7 +491,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const assert = __webpack_require__(22).assert;
-	var Frog = __webpack_require__(1);
+	var Frog = __webpack_require__(2);
 
 	describe('Frog', function () {
 	  it('should be a function', function () {
@@ -8867,7 +8865,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const assert = __webpack_require__(22).assert;
-	var CarLeft = __webpack_require__(2);
+	var CarLeft = __webpack_require__(3);
 
 	describe('CarLeft', function () {
 	  it('should be a function', function () {
@@ -8921,7 +8919,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const assert = __webpack_require__(22).assert;
-	var CarRight = __webpack_require__(3);
+	var CarRight = __webpack_require__(4);
 
 	describe('CarRight', function () {
 	  it('should be a function', function () {
@@ -8975,7 +8973,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const assert = __webpack_require__(22).assert;
-	var Log = __webpack_require__(4);
+	var Log = __webpack_require__(5);
 
 	describe('Log', function () {
 	  it('should be a function', function () {
