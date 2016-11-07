@@ -47,7 +47,7 @@
 	__webpack_require__(12);
 	mocha.setup("bdd");
 	__webpack_require__(20)
-	__webpack_require__(65);
+	__webpack_require__(67);
 	if(false) {
 		module.hot.accept();
 		module.hot.dispose(function() {
@@ -188,7 +188,34 @@
 	module.exports = Log;
 
 /***/ },
-/* 6 */,
+/* 6 */
+/***/ function(module, exports) {
+
+	function Turtle(x, y, vx, width) {
+	  this.x = x;
+	  this.y = y;
+	  this.vx = vx;
+	  this.height = 48;
+	  this.width = width;
+	}
+
+	Turtle.prototype.draw = function (ctx, turtleImg) {
+	  ctx.drawImage(turtleImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = 'transparent';
+	  return this;
+	};
+
+	Turtle.prototype.move = function () {
+	  this.x += this.vx;
+	  if (this.x < -200) {
+	    this.x = 800;
+	    return this;
+	  }
+	};
+
+	module.exports = Turtle;
+
+/***/ },
 /* 7 */,
 /* 8 */,
 /* 9 */,
@@ -485,6 +512,8 @@
 	__webpack_require__(62);
 	__webpack_require__(63);
 	__webpack_require__(64);
+	__webpack_require__(65);
+	__webpack_require__(66);
 
 /***/ },
 /* 21 */
@@ -9021,6 +9050,61 @@
 /* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
+	const assert = __webpack_require__(22).assert;
+	var Turtle = __webpack_require__(6);
+
+	describe('Turtle', function () {
+	  it('should be a function', function () {
+	    assert.isFunction(Turtle);
+	  });
+
+	  it('should instantiate our friend the turtle', function () {
+	    var turtle = new Turtle(0, 0, 2, 50);
+	    assert.isObject(turtle);
+	  });
+
+	  it('should have an x coordinate', function () {
+	    var turtle = new Turtle(0, 0, 2, 50);
+	    assert.equal(turtle.x, 0);
+	  });
+
+	  it('should have a y coordinate', function () {
+	    var turtle = new Turtle(0, 0, 2, 50);
+	    assert.equal(turtle.y, 0);
+	  });
+
+	  it('should have a velocity', function () {
+	    var turtle = new Turtle(0, 0, 2, 50);
+	    assert.equal(turtle.vx, 2);
+	  });
+
+	  it('should have a width', function () {
+	    var turtle = new Turtle(0, 0, 2, 50);
+	    assert.equal(turtle.width, 50);
+	  });
+
+	  it('should spawn a new turtle when drawn', function () {
+	    var turtle = new Turtle(0, 0, 2, 50);
+	    assert.isFunction(turtle.draw);
+	  });
+
+	  it('should increment x by 2 each time draw is called', function () {
+	    var turtle = new Turtle(0, 0, 2, 50);
+	    turtle.move();
+	    assert.equal(turtle.x, 2);
+	  });
+	});
+
+/***/ },
+/* 66 */
+/***/ function(module, exports) {
+
+	
+
+/***/ },
+/* 67 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(process) {process.nextTick(function() {
 		delete __webpack_require__.c[module.id];
 		if(typeof window !== "undefined" && window.mochaPhantomJS)
@@ -9029,10 +9113,10 @@
 			mocha.run();
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(66)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(68)))
 
 /***/ },
-/* 66 */
+/* 68 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
