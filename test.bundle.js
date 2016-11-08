@@ -47,7 +47,7 @@
 	__webpack_require__(12);
 	mocha.setup("bdd");
 	__webpack_require__(20)
-	__webpack_require__(67);
+	__webpack_require__(68);
 	if(false) {
 		module.hot.accept();
 		module.hot.dispose(function() {
@@ -60,7 +60,355 @@
 	}
 
 /***/ },
-/* 1 */,
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Frog = __webpack_require__(2);
+	var CarLeft = __webpack_require__(3);
+	var CarRight = __webpack_require__(4);
+	var Log = __webpack_require__(5);
+	var Turtle = __webpack_require__(6);
+	var LilyPad = __webpack_require__(7);
+	var Score = __webpack_require__(8);
+	var GameOver = __webpack_require__(9);
+	var StartScreen = __webpack_require__(10);
+	var WinScreen = __webpack_require__(11);
+
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+	var width = canvas.width;
+	var height = canvas.height;
+
+	var rightCarImg = document.getElementById("right-car-img");
+	var leftCarImg = document.getElementById("left-car-img");
+	var frogImg = document.getElementById("frog-img");
+	var turtleImg = document.getElementById("turtle-img");
+	var thinLogImg = document.getElementById("thin-log-img");
+	var deadFrogImg = document.getElementById("dead-frog-img");
+	var startScreenImg = document.getElementById("start-screen-img");
+	var winImg = document.getElementById("win-img");
+	var froggerMusic = document.getElementById("main-audio");
+	var froggerIntro = document.getElementById("intro-audio");
+	var deathMusic = document.getElementById("death-audio");
+	var winMusic = document.getElementById("win-audio");
+	var hopMusic = document.getElementById("hop-audio");
+
+	var World = function () {
+	  this.canvas = canvas;
+	  this.ctx = ctx;
+	  this.width = width;
+	  this.height = height;
+	};
+
+	var frog = new Frog((width - 50) / 2, height - 100, 45, 50);
+
+	var frogs = [];
+	frogs.push(new Frog(-5000, 0, 45, 50));
+	frogs.push(new Frog(-5000, 0, 45, 50));
+	frogs.push(new Frog(-5000, 0, 45, 50));
+	frogs.push(new Frog(-5000, 0, 45, 50));
+
+	var frogA = new Frog(550, 650, 45, 50);
+	var frogB = new Frog(500, 650, 45, 50);
+	var frogC = new Frog(450, 650, 45, 50);
+
+	var score = new Score();
+	var gameover = new GameOver();
+	var startScreen = new StartScreen();
+	var win = new WinScreen();
+
+	var updateScore = 0;
+	var counter = 0;
+	var lives = 3;
+	var start = false;
+	var collide = false;
+	var death = false;
+
+	World.prototype.drawings = function () {
+	  frog.drawFrog(ctx, frogImg);
+	  frogs.forEach(function (frogs, i) {
+	    frogs.drawFrog(ctx, frogImg);
+	    frogA.drawFrog(ctx, frogImg);
+	    frogB.drawFrog(ctx, frogImg);
+	    frogC.drawFrog(ctx, frogImg);
+	    score.draw(ctx, updateScore);
+	  });
+	};
+
+	document.addEventListener('keydown', function (e) {
+	  if (e.keyCode == 37) {
+	    e.preventDefault();
+	    frog.frogLeft();
+	    playHop();
+	  }
+	  if (e.keyCode == 38) {
+	    e.preventDefault();
+	    frog.frogUp();
+	    playHop();
+	    return updateScore += 10;
+	  }
+	  if (e.keyCode == 39) {
+	    e.preventDefault();
+	    frog.frogRight();
+	    playHop();
+	  }
+	  if (e.keyCode == 40) {
+	    e.preventDefault();
+	    frog.frogDown();
+	    playHop();
+	    return updateScore > 0 ? updateScore -= 10 : updatescore -= 0;
+	  }
+	});
+
+	World.prototype.objectLoops = function () {
+	  leftCar.forEach(function (car) {
+	    car.draw(ctx, leftCarImg).move(width);
+	  });
+	  rightCar.forEach(function (car) {
+	    car.draw(ctx, rightCarImg).move(width);
+	  });
+	  allLogs.forEach(function (log) {
+	    log.draw(ctx, thinLogImg).move(width);
+	  });
+	  allTurtles.forEach(function (turtle) {
+	    turtle.draw(ctx, turtleImg).move();
+	  });
+	  allLilyPads.forEach(function (lilypad) {
+	    lilypad.draw(ctx);
+	  });
+	};
+
+	var leftCar = [];
+	var rightCar = [];
+	leftCar.push(new CarLeft(50, 550, 1, 50));
+	leftCar.push(new CarLeft(250, 550, 1, 50));
+	leftCar.push(new CarLeft(450, 550, 1, 50));
+	rightCar.push(new CarRight(600, 500, -1, 50));
+	rightCar.push(new CarRight(400, 500, -1, 50));
+	rightCar.push(new CarRight(50, 500, -1, 50));
+	leftCar.push(new CarLeft(0, 450, 1, 50));
+	leftCar.push(new CarLeft(100, 450, 1, 50));
+	leftCar.push(new CarLeft(400, 450, 1, 50));
+	rightCar.push(new CarRight(400, 400, -1, 50));
+	rightCar.push(new CarRight(150, 400, -1, 50));
+	leftCar.push(new CarLeft(300, 350, 1, 50));
+	leftCar.push(new CarLeft(100, 350, 1, 50));
+
+	var allLogs = [];
+	allLogs.push(new Log(-200, 200, 1, 100));
+	allLogs.push(new Log(50, 200, 1, 100));
+	allLogs.push(new Log(450, 200, 1, 100));
+	allLogs.push(new Log(350, 150, 2, 200));
+	allLogs.push(new Log(0, 150, 2, 200));
+	allLogs.push(new Log(-200, 50, 1.5, 150));
+	allLogs.push(new Log(100, 50, 1.5, 150));
+	allLogs.push(new Log(450, 50, 1.5, 150));
+
+	var allTurtles = [];
+	allTurtles.push(new Turtle(-100, 251, -1, 150));
+	allTurtles.push(new Turtle(250, 251, -1, 150));
+	allTurtles.push(new Turtle(600, 251, -1, 150));
+	allTurtles.push(new Turtle(-150, 100, -1.5, 150));
+	allTurtles.push(new Turtle(50, 100, -1.5, 150));
+	allTurtles.push(new Turtle(350, 100, -1.5, 150));
+	allTurtles.push(new Turtle(650, 100, -1.5, 150));
+
+	var allLilyPads = [];
+	allLilyPads.push(new LilyPad(90, 0));
+	allLilyPads.push(new LilyPad(190, 0));
+	allLilyPads.push(new LilyPad(290, 0));
+	allLilyPads.push(new LilyPad(390, 0));
+	allLilyPads.push(new LilyPad(490, 0));
+
+	function incrementSpeeds() {
+	  leftCar.forEach(function (car) {
+	    car.vx = car.vx + 0.5;
+	  });
+	  rightCar.forEach(function (car) {
+	    car.vx = car.vx - 0.5;
+	  });
+	}
+
+	function resetSpeeds() {
+	  leftCar.forEach(function (car) {
+	    car.vx = 1;
+	  });
+	  rightCar.forEach(function (car) {
+	    car.vx = -1;
+	  });
+	}
+
+	function frogAndCarCollision(item) {
+	  if (frog.x < item.x + item.width && frog.x + frog.width > item.x && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
+	    resetFrog();
+	    lives--;
+	  }
+	}
+
+	World.prototype.frogCollision = function () {
+	  frogs.forEach(function (item, i) {
+	    frogAndCarCollision(item);
+	  });
+	};
+
+	World.prototype.leftCarCollision = function () {
+	  leftCar.forEach(function (item, i) {
+	    frogAndCarCollision(item);
+	  });
+	};
+
+	World.prototype.rightCarCollision = function () {
+	  rightCar.forEach(function (item, i) {
+	    frogAndCarCollision(item);
+	  });
+	};
+
+	function logAndTurtleCollision(item) {
+	  if (frog.x < item.x + item.width - 25 && frog.x + frog.width > item.x + 25 && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
+	    frog.x = frog.x + item.vx;
+	    frog.y = item.y + 1;
+	    collide = true;
+	  }
+	}
+
+	World.prototype.logCollusion = function () {
+	  allLogs.forEach(function (item, i) {
+	    logAndTurtleCollision(item);
+	  });
+	};
+
+	World.prototype.turtleCollusion = function () {
+	  allTurtles.forEach(function (item, i) {
+	    logAndTurtleCollision(item);
+	  });
+	};
+
+	World.prototype.lilyPadCollusion = function () {
+	  allLilyPads.forEach(function (lilypad, i) {
+	    if (frog.x < lilypad.x + lilypad.width && frog.x + frog.width > lilypad.x && frog.y < lilypad.y + lilypad.height && frog.height + frog.y > lilypad.y) {
+	      frog.x = lilypad.x - 15;
+	      frog.y = lilypad.y + 1;
+	      collide = true;
+	      resetFrog();
+	      counter++;
+	      if (counter === 1) {
+	        frogs[0].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      } else if (counter === 2) {
+	        frogs[1].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      } else if (counter === 3) {
+	        frogs[2].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      } else if (counter === 4) {
+	        frogs[3].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      }
+	      return updateScore += 90;
+	    }
+	  });
+	};
+
+	function resetFrog() {
+	  frog.x = (width - 50) / 2;
+	  frog.y = height - 100;
+	}
+
+	World.prototype.waterDeath = function () {
+	  if (frog.y < 300) {
+	    if (collide === false) {
+	      resetFrog();
+	      lives--;
+	    } else if (collide === true) {
+	      collide = false;
+	    }
+	  }
+	};
+
+	function spaceBarReload() {
+	  document.addEventListener('keydown', function (e) {
+	    if (e.keyCode == 32) {
+	      e.preventDefault();
+	      resetDefaults();
+	    }
+	  });
+	}
+
+	function resetDefaults() {
+	  lives = 3;
+	  frogA.width = 50;
+	  frogB.width = 50;
+	  frogC.width = 50;
+	  frogs.forEach(function (frogs, i) {
+	    frogs.x = -5000;
+	  });
+	  updateScore = 0;
+	  resetFrog();
+	  resetSpeeds();
+	  start = true;
+	  death = false;
+	  counter = 0;
+	  playMain();
+	}
+
+	World.prototype.startTheScreen = function () {
+	  if (start === false) {
+	    startScreen.draw(ctx, startScreenImg, width, height);
+	    playIntro();
+	    spaceBarReload();
+	  }
+	};
+
+	World.prototype.checkLives = function () {
+	  if (lives === 2) {
+	    frogC.width = 0;
+	  } else if (lives === 1) {
+	    frogB.width = 0;
+	  } else if (lives <= 0) {
+	    death = true;
+	    frogA.width = 0;
+	    playDeath();
+	    gameover.draw(ctx, deadFrogImg, width, height);
+	    spaceBarReload();
+	  }
+	};
+
+	World.prototype.winScreen = function () {
+	  if (counter === 5) {
+	    playWin();
+	    win.draw(ctx, winImg, this.width, this.height);
+	  }
+	};
+
+	function playMain() {
+	  deathMusic.pause();
+	  froggerIntro.pause();
+	  froggerMusic.play();
+	}
+
+	function playIntro() {
+	  froggerIntro.play();
+	}
+
+	function playDeath() {
+	  froggerMusic.pause();
+	  deathMusic.play();
+	}
+
+	function playWin() {
+	  froggerMusic.pause();
+	  winMusic.play();
+	}
+
+	function playHop() {
+	  hopMusic.pause();
+	  hopMusic.currentTime = 0;
+	  hopMusic.play();
+	}
+
+	module.exports = World;
+
+/***/ },
 /* 2 */
 /***/ function(module, exports) {
 
@@ -216,11 +564,98 @@
 	module.exports = Turtle;
 
 /***/ },
-/* 7 */,
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */,
+/* 7 */
+/***/ function(module, exports) {
+
+	function LilyPad(x, y) {
+	  this.x = x;
+	  this.y = y;
+	  this.height = 50;
+	  this.width = 20;
+	}
+
+	LilyPad.prototype.draw = function (ctx) {
+	  ctx.fillStyle = "transparent";
+	  ctx.fillRect(this.x, this.y, this.width, this.height);
+	};
+
+	module.exports = LilyPad;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	
+
+	function Score() {}
+
+	Score.prototype.draw = function (ctx, updateScore) {
+	  ctx.fillStyle = "white";
+	  ctx.font = '30px Krungthep';
+	  ctx.fillText(updateScore, 112, 686);
+	  return this;
+	};
+
+	module.exports = Score;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
+
+	function GameOver() {
+	  this.x = 0;
+	  this.y = 0;
+	  this.width = 600;
+	  this.height = 700;
+	}
+
+	GameOver.prototype.draw = function (ctx, deadFrogImg, width, height) {
+	  ctx.clearRect(0, 0, width, height);
+	  ctx.drawImage(deadFrogImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = 'transparent';
+	};
+
+	module.exports = GameOver;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	function StartScreen() {
+	  this.x = 0;
+	  this.y = 0;
+	  this.width = 600;
+	  this.height = 700;
+	}
+
+	StartScreen.prototype.draw = function (ctx, startScreenImg, width, height) {
+	  ctx.clearRect(0, 0, width, height);
+	  ctx.drawImage(startScreenImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = 'transparent';
+	};
+
+	module.exports = StartScreen;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	function WinScreen() {
+	  this.x = 0;
+	  this.y = 0;
+	  this.width = 600;
+	  this.height = 700;
+	}
+
+	WinScreen.prototype.draw = function (ctx, winImg, width, height) {
+	  ctx.clearRect(0, 0, width, height);
+	  ctx.drawImage(winImg, this.x, this.y, this.width, this.height);
+	  ctx.fillStyle = 'transparent';
+	};
+
+	module.exports = WinScreen;
+
+/***/ },
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -514,6 +949,7 @@
 	__webpack_require__(64);
 	__webpack_require__(65);
 	__webpack_require__(66);
+	__webpack_require__(67);
 
 /***/ },
 /* 21 */
@@ -9097,12 +9533,62 @@
 
 /***/ },
 /* 66 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	
+	const assert = __webpack_require__(22).assert;
+	var LilyPad = __webpack_require__(7);
+
+	describe('LilyPad', function () {
+	  it('should be a function', function () {
+	    assert.isFunction(LilyPad);
+	  });
+
+	  it('should instantiate our allies the lilypads', function () {
+	    var lilypad = new LilyPad(0, 0);
+	    assert.isObject(lilypad);
+	  });
+
+	  it('should have an X coordinate', function () {
+	    var lilypad = new LilyPad(0, 0);
+	    assert.equal(lilypad.x, 0);
+	  });
+
+	  it('should have a Y coordinate', function () {
+	    var lilypad = new LilyPad(0, 0);
+	    assert.equal(lilypad.y, 0);
+	  });
+
+	  it('should have a height', function () {
+	    var lilypad = new LilyPad(0, 0);
+	    assert.equal(lilypad.height, 50);
+	  });
+
+	  it('should have a width', function () {
+	    var lilypad = new LilyPad(0, 0);
+	    assert.equal(lilypad.width, 20);
+	  });
+	});
 
 /***/ },
 /* 67 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const assert = __webpack_require__(22).assert;
+	var World = __webpack_require__(1);
+
+	describe('World', function () {
+	  it.skip('should be a function', function () {
+	    assert.isFunction(World);
+	  });
+
+	  it.skip('should instantiate our world', function () {
+	    var world = new World(canvas, ctx, width, height);
+	    assert.isObject(world);
+	  });
+	});
+
+/***/ },
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {process.nextTick(function() {
@@ -9113,10 +9599,10 @@
 			mocha.run();
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(68)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(69)))
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
