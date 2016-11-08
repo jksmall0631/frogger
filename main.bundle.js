@@ -64,7 +64,7 @@
 	  world.turtleCollusion();
 	  world.lilyPadCollusion();
 	  world.waterDeath();
-	  world.tryAgainScreen();
+	  world.checkLives();
 	  world.startTheScreen();
 	  world.winScreen();
 	  requestAnimationFrame(gameLoop);
@@ -104,7 +104,7 @@
 	var winMusic = document.getElementById("win-audio");
 	var hopMusic = document.getElementById("hop-audio");
 
-	var World = function (canvas, ctx, width, height) {
+	var World = function () {
 	  this.canvas = canvas;
 	  this.ctx = ctx;
 	  this.width = width;
@@ -112,25 +112,39 @@
 	};
 
 	var frog = new Frog((width - 50) / 2, height - 100, 45, 50);
-	var frogs = [];
 
+	var frogs = [];
 	frogs.push(new Frog(-5000, 0, 45, 50));
 	frogs.push(new Frog(-5000, 0, 45, 50));
 	frogs.push(new Frog(-5000, 0, 45, 50));
 	frogs.push(new Frog(-5000, 0, 45, 50));
-	var frogE = new Frog(550, 650, 45, 50);
-	var frogF = new Frog(500, 650, 45, 50);
-	var frogG = new Frog(450, 650, 45, 50);
+
+	var frogA = new Frog(550, 650, 45, 50);
+	var frogB = new Frog(500, 650, 45, 50);
+	var frogC = new Frog(450, 650, 45, 50);
+
 	var score = new Score();
 	var gameover = new GameOver();
 	var startScreen = new StartScreen();
 	var win = new WinScreen();
 
 	var updateScore = 0;
-	var death = false;
-	var start = false;
 	var counter = 0;
+	var lives = 3;
+	var start = false;
 	var collide = false;
+	var death = false;
+
+	World.prototype.drawings = function () {
+	  frog.drawFrog(ctx, frogImg);
+	  frogs.forEach(function (frogs, i) {
+	    frogs.drawFrog(ctx, frogImg);
+	    frogA.drawFrog(ctx, frogImg);
+	    frogB.drawFrog(ctx, frogImg);
+	    frogC.drawFrog(ctx, frogImg);
+	    score.draw(ctx, updateScore);
+	  });
+	};
 
 	document.addEventListener('keydown', function (e) {
 	  if (e.keyCode == 37) {
@@ -157,17 +171,6 @@
 	  }
 	});
 
-	World.prototype.drawings = function () {
-	  frog.drawFrog(ctx, frogImg);
-	  frogs.forEach(function (frogs, i) {
-	    frogs.drawFrog(ctx, frogImg);
-	  });
-	  frogE.drawFrog(ctx, frogImg);
-	  frogF.drawFrog(ctx, frogImg);
-	  frogG.drawFrog(ctx, frogImg);
-	  score.draw(ctx, updateScore);
-	};
-
 	World.prototype.objectLoops = function () {
 	  leftCar.forEach(function (car) {
 	    car.draw(ctx, leftCarImg).move(width);
@@ -188,7 +191,6 @@
 
 	var leftCar = [];
 	var rightCar = [];
-
 	leftCar.push(new CarLeft(50, 550, 1, 50));
 	leftCar.push(new CarLeft(250, 550, 1, 50));
 	leftCar.push(new CarLeft(450, 550, 1, 50));
@@ -204,7 +206,6 @@
 	leftCar.push(new CarLeft(100, 350, 1, 50));
 
 	var allLogs = [];
-
 	allLogs.push(new Log(-200, 200, 1, 100));
 	allLogs.push(new Log(50, 200, 1, 100));
 	allLogs.push(new Log(450, 200, 1, 100));
@@ -215,7 +216,6 @@
 	allLogs.push(new Log(450, 50, 1.5, 150));
 
 	var allTurtles = [];
-
 	allTurtles.push(new Turtle(-100, 251, -1, 150));
 	allTurtles.push(new Turtle(250, 251, -1, 150));
 	allTurtles.push(new Turtle(600, 251, -1, 150));
@@ -225,7 +225,6 @@
 	allTurtles.push(new Turtle(650, 100, -1.5, 150));
 
 	var allLilyPads = [];
-
 	allLilyPads.push(new LilyPad(90, 0));
 	allLilyPads.push(new LilyPad(190, 0));
 	allLilyPads.push(new LilyPad(290, 0));
@@ -241,53 +240,57 @@
 	  });
 	}
 
+	function resetSpeeds() {
+	  leftCar.forEach(function (car) {
+	    car.vx = 1;
+	  });
+	  rightCar.forEach(function (car) {
+	    car.vx = -1;
+	  });
+	}
+
+	function frogAndCarCollision(item) {
+	  if (frog.x < item.x + item.width && frog.x + frog.width > item.x && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
+	    resetFrog();
+	    lives--;
+	  }
+	}
+
 	World.prototype.frogCollision = function () {
-	  frogs.forEach(function (frogs, i) {
-	    if (frog.x < frogs.x + frogs.width && frog.x + frog.width > frogs.x && frog.y < frogs.y + frogs.height && frog.height + frog.y > frogs.y) {
-	      frog.x = (width - 50) / 2;
-	      frog.y = height - 100;
-	      lives--;
-	    }
+	  frogs.forEach(function (item, i) {
+	    frogAndCarCollision(item);
 	  });
 	};
 
 	World.prototype.leftCarCollision = function () {
-	  leftCar.forEach(function (car, i) {
-	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
-	      frog.x = (width - 50) / 2;
-	      frog.y = height - 100;
-	      lives--;
-	    }
+	  leftCar.forEach(function (item, i) {
+	    frogAndCarCollision(item);
 	  });
 	};
 
 	World.prototype.rightCarCollision = function () {
-	  rightCar.forEach(function (car, i) {
-	    if (frog.x < car.x + car.width && frog.x + frog.width > car.x && frog.y < car.y + car.height && frog.height + frog.y > car.y) {
-	      frog.x = (width - 50) / 2;
-	      frog.y = height - 100;
-	      lives--;
-	    }
+	  rightCar.forEach(function (item, i) {
+	    frogAndCarCollision(item);
 	  });
 	};
 
+	function logAndTurtleCollision(item) {
+	  if (frog.x < item.x + item.width - 25 && frog.x + frog.width > item.x + 25 && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
+	    frog.x = frog.x + item.vx;
+	    frog.y = item.y + 1;
+	    collide = true;
+	  }
+	}
+
 	World.prototype.logCollusion = function () {
-	  allLogs.forEach(function (log, i) {
-	    if (frog.x < log.x + log.width - 30 && frog.x + frog.width > log.x + 30 && frog.y < log.y + log.height && frog.height + frog.y > log.y) {
-	      frog.x = frog.x + log.vx;
-	      frog.y = log.y + 1;
-	      collide = true;
-	    }
+	  allLogs.forEach(function (item, i) {
+	    logAndTurtleCollision(item);
 	  });
 	};
 
 	World.prototype.turtleCollusion = function () {
-	  allTurtles.forEach(function (turtle, i) {
-	    if (frog.x < turtle.x + turtle.width - 20 && frog.x + frog.width > turtle.x + 20 && frog.y < turtle.y + turtle.height && frog.height + frog.y > turtle.y) {
-	      frog.x = frog.x + turtle.vx;
-	      frog.y = turtle.y + 1;
-	      collide = true;
-	    }
+	  allTurtles.forEach(function (item, i) {
+	    logAndTurtleCollision(item);
 	  });
 	};
 
@@ -297,8 +300,7 @@
 	      frog.x = lilypad.x - 15;
 	      frog.y = lilypad.y + 1;
 	      collide = true;
-	      frog.x = (width - 50) / 2;
-	      frog.y = height - 100;
+	      resetFrog();
 	      counter++;
 	      if (counter === 1) {
 	        frogs[0].x = lilypad.x - 15;
@@ -318,13 +320,15 @@
 	  });
 	};
 
+	function resetFrog() {
+	  frog.x = (width - 50) / 2;
+	  frog.y = height - 100;
+	}
+
 	World.prototype.waterDeath = function () {
 	  if (frog.y < 300) {
 	    if (collide === false) {
-	      // gameover.draw(ctx, deadFrogImg, width, height);
-	      // death = true;
-	      frog.x = (width - 50) / 2;
-	      frog.y = height - 100;
+	      resetFrog();
 	      lives--;
 	    } else if (collide === true) {
 	      collide = false;
@@ -343,27 +347,19 @@
 
 	function resetDefaults() {
 	  lives = 3;
-	  frogE.width = 50;
-	  frogF.width = 50;
-	  frogG.width = 50;
+	  frogA.width = 50;
+	  frogB.width = 50;
+	  frogC.width = 50;
 	  frogs.forEach(function (frogs, i) {
 	    frogs.x = -5000;
 	  });
 	  updateScore = 0;
-	  frog.x = (width - 50) / 2;
-	  frog.y = height - 100;
+	  resetFrog();
+	  resetSpeeds();
 	  start = true;
 	  death = false;
+	  counter = 0;
 	  playMain();
-	}
-
-	function spaceBarRestart() {
-	  document.addEventListener('keydown', function (e) {
-	    if (e.keyCode == 32) {
-	      e.preventDefault();
-	      document.location.reload();
-	    }
-	  });
 	}
 
 	World.prototype.startTheScreen = function () {
@@ -374,17 +370,17 @@
 	  }
 	};
 
-	var lives = 3;
-
-	World.prototype.tryAgainScreen = function () {
+	World.prototype.checkLives = function () {
 	  if (lives === 2) {
-	    frogG.width = 0;
+	    frogC.width = 0;
 	  } else if (lives === 1) {
-	    frogF.width = 0;
+	    frogB.width = 0;
 	  } else if (lives <= 0) {
 	    death = true;
-	    frogE.width = 0;
-	    deathScreen();
+	    frogA.width = 0;
+	    playDeath();
+	    gameover.draw(ctx, deadFrogImg, width, height);
+	    spaceBarReload();
 	  }
 	};
 
@@ -392,19 +388,8 @@
 	  if (counter === 5) {
 	    playWin();
 	    win.draw(ctx, winImg, this.width, this.height);
-	    spaceBarRestart();
 	  }
 	};
-
-	function deathScreen() {
-	  if (lives <= 0) {
-	    playDeath();
-	    gameover.draw(ctx, deadFrogImg, width, height);
-	    spaceBarReload();
-	    // resetDefaults();
-	    // death = false;
-	  }
-	}
 
 	function playMain() {
 	  deathMusic.pause();
