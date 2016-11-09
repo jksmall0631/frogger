@@ -45,28 +45,23 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var World = __webpack_require__(1);
+	var Collision = __webpack_require__(13);
+	var Frog = __webpack_require__(2);
 	var canvas = document.getElementById("frogger");
 	var ctx = canvas.getContext("2d");
 	var width = canvas.width;
 	var height = canvas.height;
 	var world = new World(canvas, ctx, width, height);
-
-	canvas.focus();
+	var collision = new Collision();
 
 	requestAnimationFrame(function gameLoop() {
 	  ctx.clearRect(0, 0, width, height);
-	  world.objectLoops();
+	  collision.logLoops();
 	  world.drawings();
-	  world.leftCarCollision();
-	  world.rightCarCollision();
-	  world.frogCollision();
-	  world.logCollusion();
-	  world.turtleCollusion();
-	  world.lilyPadCollusion();
-	  world.waterDeath();
+	  world.collisionCheck();
 	  world.checkLives();
 	  world.startTheScreen();
-	  world.winScreen();
+	  // world.winScreen();
 	  requestAnimationFrame(gameLoop);
 	});
 
@@ -84,17 +79,15 @@
 	var GameOver = __webpack_require__(9);
 	var StartScreen = __webpack_require__(10);
 	var WinScreen = __webpack_require__(11);
+	var Music = __webpack_require__(12);
+	var Collision = __webpack_require__(13);
 
 	var canvas = document.getElementById("frogger");
 	var ctx = canvas.getContext("2d");
 	var width = canvas.width;
 	var height = canvas.height;
 
-	var rightCarImg = document.getElementById("right-car-img");
-	var leftCarImg = document.getElementById("left-car-img");
 	var frogImg = document.getElementById("frog-img");
-	var turtleImg = document.getElementById("turtle-img");
-	var thinLogImg = document.getElementById("thin-log-img");
 	var deadFrogImg = document.getElementById("dead-frog-img");
 	var startScreenImg = document.getElementById("start-screen-img");
 	var winImg = document.getElementById("win-img");
@@ -112,12 +105,9 @@
 	};
 
 	var frog = new Frog((width - 50) / 2, height - 100, 45, 50);
-
-	var frogs = [];
-	frogs.push(new Frog(-5000, 0, 45, 50));
-	frogs.push(new Frog(-5000, 0, 45, 50));
-	frogs.push(new Frog(-5000, 0, 45, 50));
-	frogs.push(new Frog(-5000, 0, 45, 50));
+	var collision = new Collision();
+	var carLeft = new CarLeft();
+	var carRight = new CarRight();
 
 	var frogA = new Frog(550, 650, 45, 50);
 	var frogB = new Frog(500, 650, 45, 50);
@@ -127,214 +117,71 @@
 	var gameover = new GameOver();
 	var startScreen = new StartScreen();
 	var win = new WinScreen();
+	var music = new Music();
 
 	var updateScore = 0;
 	var counter = 0;
-	var lives = 3;
+	var lives = collision.lives;
 	var start = false;
 	var collide = false;
 	var death = false;
 
+	World.prototype.collisionCheck = function () {
+	  collision.logCollusion(frog);
+	  collision.turtleCollusion(frog);
+	  collision.leftCarCollision(frog, lives);
+	  collision.rightCarCollision(frog, lives);
+	  collision.frogCollision(frog, lives);
+	  collision.lilyPadCollusion(frog);
+	  collision.waterDeath(frog, lives);
+	  collide = collision.collide;
+	};
+
 	World.prototype.drawings = function () {
 	  frog.drawFrog(ctx, frogImg);
-	  frogs.forEach(function (frogs, i) {
-	    frogs.drawFrog(ctx, frogImg);
-	    frogA.drawFrog(ctx, frogImg);
-	    frogB.drawFrog(ctx, frogImg);
-	    frogC.drawFrog(ctx, frogImg);
-	    score.draw(ctx, updateScore);
-	  });
+	  score.draw(ctx, updateScore);
+	  frogA.drawFrog(ctx, frogImg);
+	  frogB.drawFrog(ctx, frogImg);
+	  frogC.drawFrog(ctx, frogImg);
 	};
 
 	document.addEventListener('keydown', function (e) {
 	  if (e.keyCode == 37) {
 	    e.preventDefault();
 	    frog.frogLeft();
-	    playHop();
+	    music.playHop(hopMusic);
 	  }
 	  if (e.keyCode == 38) {
 	    e.preventDefault();
 	    frog.frogUp();
-	    playHop();
+	    music.playHop(hopMusic);
 	    return updateScore += 10;
 	  }
 	  if (e.keyCode == 39) {
 	    e.preventDefault();
 	    frog.frogRight();
-	    playHop();
+	    music.playHop(hopMusic);
 	  }
 	  if (e.keyCode == 40) {
 	    e.preventDefault();
 	    frog.frogDown();
-	    playHop();
+	    music.playHop(hopMusic);
 	    return updateScore > 0 ? updateScore -= 10 : updatescore -= 0;
 	  }
 	});
 
-	World.prototype.objectLoops = function () {
-	  leftCar.forEach(function (car) {
-	    car.draw(ctx, leftCarImg).move(width);
-	  });
-	  rightCar.forEach(function (car) {
-	    car.draw(ctx, rightCarImg).move(width);
-	  });
-	  allLogs.forEach(function (log) {
-	    log.draw(ctx, thinLogImg).move(width);
-	  });
-	  allTurtles.forEach(function (turtle) {
-	    turtle.draw(ctx, turtleImg).move();
-	  });
-	  allLilyPads.forEach(function (lilypad) {
-	    lilypad.draw(ctx);
-	  });
-	};
-
-	var leftCar = [];
-	var rightCar = [];
-	leftCar.push(new CarLeft(50, 550, 1, 50));
-	leftCar.push(new CarLeft(250, 550, 1, 50));
-	leftCar.push(new CarLeft(450, 550, 1, 50));
-	rightCar.push(new CarRight(600, 500, -1, 50));
-	rightCar.push(new CarRight(400, 500, -1, 50));
-	rightCar.push(new CarRight(50, 500, -1, 50));
-	leftCar.push(new CarLeft(0, 450, 1, 50));
-	leftCar.push(new CarLeft(100, 450, 1, 50));
-	leftCar.push(new CarLeft(400, 450, 1, 50));
-	rightCar.push(new CarRight(400, 400, -1, 50));
-	rightCar.push(new CarRight(150, 400, -1, 50));
-	leftCar.push(new CarLeft(300, 350, 1, 50));
-	leftCar.push(new CarLeft(100, 350, 1, 50));
-
-	var allLogs = [];
-	allLogs.push(new Log(-200, 200, 1, 100));
-	allLogs.push(new Log(50, 200, 1, 100));
-	allLogs.push(new Log(450, 200, 1, 100));
-	allLogs.push(new Log(350, 150, 2, 200));
-	allLogs.push(new Log(0, 150, 2, 200));
-	allLogs.push(new Log(-200, 50, 1.5, 150));
-	allLogs.push(new Log(100, 50, 1.5, 150));
-	allLogs.push(new Log(450, 50, 1.5, 150));
-
-	var allTurtles = [];
-	allTurtles.push(new Turtle(-100, 251, -1, 150));
-	allTurtles.push(new Turtle(250, 251, -1, 150));
-	allTurtles.push(new Turtle(600, 251, -1, 150));
-	allTurtles.push(new Turtle(-150, 100, -1.5, 150));
-	allTurtles.push(new Turtle(50, 100, -1.5, 150));
-	allTurtles.push(new Turtle(350, 100, -1.5, 150));
-	allTurtles.push(new Turtle(650, 100, -1.5, 150));
-
-	var allLilyPads = [];
-	allLilyPads.push(new LilyPad(90, 0));
-	allLilyPads.push(new LilyPad(190, 0));
-	allLilyPads.push(new LilyPad(290, 0));
-	allLilyPads.push(new LilyPad(390, 0));
-	allLilyPads.push(new LilyPad(490, 0));
-
-	function incrementSpeeds() {
-	  leftCar.forEach(function (car) {
-	    car.vx = car.vx + 0.5;
-	  });
-	  rightCar.forEach(function (car) {
-	    car.vx = car.vx - 0.5;
-	  });
-	}
-
-	function resetSpeeds() {
-	  leftCar.forEach(function (car) {
-	    car.vx = 1;
-	  });
-	  rightCar.forEach(function (car) {
-	    car.vx = -1;
-	  });
-	}
-
-	function frogAndCarCollision(item) {
-	  if (frog.x < item.x + item.width && frog.x + frog.width > item.x && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
-	    resetFrog();
-	    lives--;
-	  }
-	}
-
-	World.prototype.frogCollision = function () {
-	  frogs.forEach(function (item, i) {
-	    frogAndCarCollision(item);
-	  });
-	};
-
-	World.prototype.leftCarCollision = function () {
-	  leftCar.forEach(function (item, i) {
-	    frogAndCarCollision(item);
-	  });
-	};
-
-	World.prototype.rightCarCollision = function () {
-	  rightCar.forEach(function (item, i) {
-	    frogAndCarCollision(item);
-	  });
-	};
-
-	function logAndTurtleCollision(item) {
-	  if (frog.x < item.x + item.width - 25 && frog.x + frog.width > item.x + 25 && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
-	    frog.x = frog.x + item.vx;
-	    frog.y = item.y + 1;
-	    collide = true;
-	  }
-	}
-
-	World.prototype.logCollusion = function () {
-	  allLogs.forEach(function (item, i) {
-	    logAndTurtleCollision(item);
-	  });
-	};
-
-	World.prototype.turtleCollusion = function () {
-	  allTurtles.forEach(function (item, i) {
-	    logAndTurtleCollision(item);
-	  });
-	};
-
-	World.prototype.lilyPadCollusion = function () {
-	  allLilyPads.forEach(function (lilypad, i) {
-	    if (frog.x < lilypad.x + lilypad.width && frog.x + frog.width > lilypad.x && frog.y < lilypad.y + lilypad.height && frog.height + frog.y > lilypad.y) {
-	      frog.x = lilypad.x - 15;
-	      frog.y = lilypad.y + 1;
-	      collide = true;
-	      resetFrog();
-	      counter++;
-	      if (counter === 1) {
-	        frogs[0].x = lilypad.x - 15;
-	        incrementSpeeds();
-	      } else if (counter === 2) {
-	        frogs[1].x = lilypad.x - 15;
-	        incrementSpeeds();
-	      } else if (counter === 3) {
-	        frogs[2].x = lilypad.x - 15;
-	        incrementSpeeds();
-	      } else if (counter === 4) {
-	        frogs[3].x = lilypad.x - 15;
-	        incrementSpeeds();
-	      }
-	      return updateScore += 90;
-	    }
-	  });
-	};
-
-	function resetFrog() {
-	  frog.x = (width - 50) / 2;
-	  frog.y = height - 100;
-	}
-
-	World.prototype.waterDeath = function () {
-	  if (frog.y < 300) {
-	    if (collide === false) {
-	      resetFrog();
-	      lives--;
-	    } else if (collide === true) {
-	      collide = false;
-	    }
-	  }
-	};
+	// World.prototype.waterDeath = function () {
+	//   if(frog.y < 300) {
+	//   if(collide === false){
+	//       console.log('this is our collision', self.collide)
+	//     frog.resetFrog();
+	//     lives--;
+	//     }
+	//   else if(collide === true){
+	//     collide = false;
+	//     }
+	//   }
+	// };
 
 	function spaceBarReload() {
 	  document.addEventListener('keydown', function (e) {
@@ -346,82 +193,59 @@
 	}
 
 	function resetDefaults() {
-	  lives = 3;
+	  collision.lives = 3;
 	  frogA.width = 50;
 	  frogB.width = 50;
 	  frogC.width = 50;
-	  frogs.forEach(function (frogs, i) {
-	    frogs.x = -5000;
-	  });
+	  collision.resetPlaceholders();
 	  updateScore = 0;
-	  resetFrog();
-	  resetSpeeds();
+	  frog.resetFrog();
+	  collision.resetSpeeds();
 	  start = true;
 	  death = false;
 	  counter = 0;
-	  playMain();
+	  music.playMain(winMusic, deathMusic, froggerIntro, froggerMusic);
 	}
 
 	World.prototype.startTheScreen = function () {
 	  if (start === false) {
 	    startScreen.draw(ctx, startScreenImg, width, height);
-	    playIntro();
+	    music.playIntro(froggerIntro);
 	    spaceBarReload();
 	  }
 	};
 
 	World.prototype.checkLives = function () {
-	  if (lives === 2) {
+	  if (collision.lives === 2) {
 	    frogC.width = 0;
-	  } else if (lives === 1) {
+	  } else if (collision.lives === 1) {
 	    frogB.width = 0;
-	  } else if (lives <= 0) {
+	  } else if (collision.lives <= 0) {
 	    death = true;
 	    frogA.width = 0;
-	    playDeath();
+	    music.playDeath(froggerMusic, deathMusic);
 	    gameover.draw(ctx, deadFrogImg, width, height);
 	    spaceBarReload();
 	  }
 	};
 
 	World.prototype.winScreen = function () {
-	  if (counter === 5) {
-	    playWin();
+	  if (collision.counter === 5) {
+	    console.log('this is our collision count', collision.counter);
+	    music.playWin(winMusic, froggerMusic);
 	    win.draw(ctx, winImg, this.width, this.height);
 	  }
 	};
-
-	function playMain() {
-	  deathMusic.pause();
-	  froggerIntro.pause();
-	  froggerMusic.play();
-	}
-
-	function playIntro() {
-	  froggerIntro.play();
-	}
-
-	function playDeath() {
-	  froggerMusic.pause();
-	  deathMusic.play();
-	}
-
-	function playWin() {
-	  froggerMusic.pause();
-	  winMusic.play();
-	}
-
-	function playHop() {
-	  hopMusic.pause();
-	  hopMusic.currentTime = 0;
-	  hopMusic.play();
-	}
 
 	module.exports = World;
 
 /***/ },
 /* 2 */
 /***/ function(module, exports) {
+
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+	var frogImg = document.getElementById("frog-img");
 
 	var Frog = function (x, y, height, width) {
 	  this.x = x;
@@ -430,7 +254,7 @@
 	  this.width = width;
 	};
 
-	Frog.prototype.drawFrog = function (ctx, frogImg) {
+	Frog.prototype.drawFrog = function () {
 	  ctx.beginPath();
 	  ctx.drawImage(frogImg, this.x, this.y, this.width, this.height);
 	  ctx.fillStyle = "transparent";
@@ -460,11 +284,20 @@
 	  }
 	};
 
+	Frog.prototype.resetFrog = function () {
+	  this.x = (600 - 50) / 2;
+	  this.y = 700 - 100;
+	};
+
 	module.exports = Frog;
 
 /***/ },
 /* 3 */
 /***/ function(module, exports) {
+
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+	var leftCarImg = document.getElementById("left-car-img");
 
 	function CarLeft(x, y, vx, width) {
 	  this.x = x;
@@ -474,15 +307,15 @@
 	  this.width = width;
 	}
 
-	CarLeft.prototype.draw = function (ctx, leftCarImg) {
+	CarLeft.prototype.draw = function () {
 	  ctx.fillStyle = 'transparent';
 	  ctx.drawImage(leftCarImg, this.x, this.y, this.width, this.height);
 	  return this;
 	};
 
-	CarLeft.prototype.move = function (width) {
+	CarLeft.prototype.move = function () {
 	  this.x += this.vx;
-	  if (this.x > width + 50) {
+	  if (this.x > 600 + 50) {
 	    this.x = -50;
 	    return this;
 	  }
@@ -494,6 +327,10 @@
 /* 4 */
 /***/ function(module, exports) {
 
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+	var rightCarImg = document.getElementById("right-car-img");
+
 	function CarRight(x, y, vx, width) {
 	  this.x = x;
 	  this.y = y;
@@ -502,7 +339,7 @@
 	  this.width = width;
 	}
 
-	CarRight.prototype.draw = function (ctx, rightCarImg) {
+	CarRight.prototype.draw = function () {
 	  ctx.fillStyle = 'transparent';
 	  ctx.drawImage(rightCarImg, this.x, this.y, this.width, this.height);
 	  return this;
@@ -522,6 +359,10 @@
 /* 5 */
 /***/ function(module, exports) {
 
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+	var thinLogImg = document.getElementById("thin-log-img");
+
 	function Log(x, y, vx, width) {
 	  this.x = x;
 	  this.y = y;
@@ -530,15 +371,15 @@
 	  this.width = width;
 	}
 
-	Log.prototype.draw = function (ctx, thinLogImg) {
+	Log.prototype.draw = function () {
 	  ctx.drawImage(thinLogImg, this.x, this.y, this.width, this.height);
 	  ctx.fillStyle = "transparent";
 	  return this;
 	};
 
-	Log.prototype.move = function (width) {
+	Log.prototype.move = function () {
 	  this.x += this.vx;
-	  if (this.x > width + 50) {
+	  if (this.x > 600 + 50) {
 	    this.x = -200;
 	    return this;
 	  }
@@ -550,6 +391,10 @@
 /* 6 */
 /***/ function(module, exports) {
 
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+	var turtleImg = document.getElementById("turtle-img");
+
 	function Turtle(x, y, vx, width) {
 	  this.x = x;
 	  this.y = y;
@@ -558,7 +403,7 @@
 	  this.width = width;
 	}
 
-	Turtle.prototype.draw = function (ctx, turtleImg) {
+	Turtle.prototype.draw = function () {
 	  ctx.drawImage(turtleImg, this.x, this.y, this.width, this.height);
 	  ctx.fillStyle = 'transparent';
 	  return this;
@@ -578,6 +423,9 @@
 /* 7 */
 /***/ function(module, exports) {
 
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+
 	function LilyPad(x, y) {
 	  this.x = x;
 	  this.y = y;
@@ -585,7 +433,7 @@
 	  this.width = 20;
 	}
 
-	LilyPad.prototype.draw = function (ctx) {
+	LilyPad.prototype.draw = function () {
 	  ctx.fillStyle = "transparent";
 	  ctx.fillRect(this.x, this.y, this.width, this.height);
 	};
@@ -665,6 +513,248 @@
 	};
 
 	module.exports = WinScreen;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	
+
+	var Music = function () {};
+
+	Music.prototype.playMain = function (winMusic, deathMusic, froggerIntro, froggerMusic) {
+	  winMusic.pause();
+	  deathMusic.pause();
+	  froggerIntro.pause();
+	  froggerMusic.play();
+	};
+
+	Music.prototype.playIntro = function (froggerIntro) {
+	  froggerIntro.play();
+	};
+
+	Music.prototype.playDeath = function (froggerMusic, deathMusic) {
+	  froggerMusic.pause();
+	  deathMusic.play();
+	};
+
+	Music.prototype.playWin = function (winMusic, froggerMusic) {
+	  froggerMusic.pause();
+	  winMusic.play();
+	};
+
+	Music.prototype.playHop = function (hopMusic) {
+	  hopMusic.pause();
+	  hopMusic.currentTime = 0;
+	  hopMusic.play();
+	};
+
+	module.exports = Music;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Log = __webpack_require__(5);
+	var Turtle = __webpack_require__(6);
+	var CarLeft = __webpack_require__(3);
+	var CarRight = __webpack_require__(4);
+	var Frog = __webpack_require__(2);
+	var LilyPad = __webpack_require__(7);
+	var canvas = document.getElementById("frogger");
+	var ctx = canvas.getContext("2d");
+
+	var Collision = function (ctx) {
+	  this.ctx = ctx;
+	  this.collide = false;
+	  this.lives = 3;
+	  this.counter = 0;
+	};
+
+	Collision.prototype.logLoops = function (ctx, thinLogImg, turtleImg, leftCarImg, rightCarImg, frogImg, width) {
+	  allLogs.forEach(function (log) {
+	    log.draw(ctx, thinLogImg).move(width);
+	  });
+	  allTurtles.forEach(function (turtle) {
+	    turtle.draw(ctx, turtleImg).move();
+	  });
+	  leftCar.forEach(function (car) {
+	    car.draw(ctx, leftCarImg).move(width);
+	  });
+	  rightCar.forEach(function (car) {
+	    car.draw(ctx, rightCarImg).move(width);
+	  });
+	  frogs.forEach(function (frogs) {
+	    frogs.drawFrog(ctx, frogImg);
+	  });
+	  allLilyPads.forEach(function (lilypad) {
+	    lilypad.draw(ctx);
+	  });
+	};
+
+	Collision.prototype.logCollusion = function (frog) {
+	  var self = this;
+	  allLogs.forEach(function (item, i) {
+	    logAndTurtleCollision(item, frog, self);
+	  });
+	};
+
+	Collision.prototype.turtleCollusion = function (frog) {
+	  var self = this;
+	  allTurtles.forEach(function (item, i) {
+	    logAndTurtleCollision(item, frog, self);
+	  });
+	};
+
+	function logAndTurtleCollision(item, frog, self) {
+	  if (frog.x < item.x + item.width - 25 && frog.x + frog.width > item.x + 25 && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
+	    frog.x = frog.x + item.vx;
+	    frog.y = item.y + 1;
+	    self.collide = true;
+	  }
+	}
+
+	function frogAndCarCollision(item, frog, self) {
+	  if (frog.x < item.x + item.width && frog.x + frog.width > item.x && frog.y < item.y + item.height && frog.height + frog.y > item.y) {
+	    frog.resetFrog();
+	    self.lives--;
+	  }
+	}
+
+	Collision.prototype.frogCollision = function (frog) {
+	  var self = this;
+	  frogs.forEach(function (item, i) {
+	    frogAndCarCollision(item, frog, self);
+	  });
+	};
+
+	Collision.prototype.leftCarCollision = function (frog) {
+	  var self = this;
+	  leftCar.forEach(function (item, i) {
+	    frogAndCarCollision(item, frog, self);
+	  });
+	};
+
+	Collision.prototype.rightCarCollision = function (frog) {
+	  var self = this;
+	  rightCar.forEach(function (item, i) {
+	    frogAndCarCollision(item, frog, self);
+	  });
+	};
+
+	Collision.prototype.lilyPadCollusion = function (frog, updateScore, lives) {
+	  var self = this;
+	  allLilyPads.forEach(function (lilypad, i) {
+	    if (frog.x < lilypad.x + lilypad.width && frog.x + frog.width > lilypad.x && frog.y < lilypad.y + lilypad.height && frog.height + frog.y > lilypad.y) {
+	      frog.x = lilypad.x - 15;
+	      frog.y = lilypad.y + 1;
+	      self.collide = true;
+	      frog.resetFrog();
+	      self.counter++;
+	      if (self.counter === 1) {
+	        frogs[0].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      } else if (self.counter === 2) {
+	        frogs[1].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      } else if (self.counter === 3) {
+	        frogs[2].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      } else if (self.counter === 4) {
+	        frogs[3].x = lilypad.x - 15;
+	        incrementSpeeds();
+	      }
+
+	      return updateScore += 90;
+	    }
+	  });
+	};
+
+	Collision.prototype.waterDeath = function (frog, lives) {
+	  var self = this;
+	  if (frog.y < 300) {
+	    if (self.collide === false) {
+	      frog.resetFrog();
+	      self.lives--;
+	    } else if (self.collide === true) {
+	      self.collide = false;
+	    }
+	  }
+	};
+
+	Collision.prototype.resetPlaceholders = function () {
+	  frogs.forEach(function (frogs, i) {
+	    frogs.x = -5000;
+	  });
+	};
+
+	function incrementSpeeds() {
+	  rightCar.forEach(function (car) {
+	    car.vx = car.vx - 0.5;
+	  });
+	  leftCar.forEach(function (car) {
+	    car.vx = car.vx + 0.5;
+	  });
+	}
+
+	Collision.prototype.resetSpeeds = function () {
+	  rightCar.forEach(function (car) {
+	    car.vx = -1;
+	  });
+	  leftCar.forEach(function (car) {
+	    car.vx = +1;
+	  });
+	};
+
+	var allLogs = [];
+	allLogs.push(new Log(-200, 200, 1, 100));
+	allLogs.push(new Log(50, 200, 1, 100));
+	allLogs.push(new Log(450, 200, 1, 100));
+	allLogs.push(new Log(350, 150, 2, 200));
+	allLogs.push(new Log(0, 150, 2, 200));
+	allLogs.push(new Log(-200, 50, 1.5, 150));
+	allLogs.push(new Log(100, 50, 1.5, 150));
+	allLogs.push(new Log(450, 50, 1.5, 150));
+
+	var allTurtles = [];
+	allTurtles.push(new Turtle(-100, 251, -1, 150));
+	allTurtles.push(new Turtle(250, 251, -1, 150));
+	allTurtles.push(new Turtle(600, 251, -1, 150));
+	allTurtles.push(new Turtle(-150, 100, -1.5, 150));
+	allTurtles.push(new Turtle(50, 100, -1.5, 150));
+	allTurtles.push(new Turtle(350, 100, -1.5, 150));
+	allTurtles.push(new Turtle(650, 100, -1.5, 150));
+
+	var leftCar = [];
+	var rightCar = [];
+	leftCar.push(new CarLeft(50, 550, 1, 50));
+	leftCar.push(new CarLeft(250, 550, 1, 50));
+	leftCar.push(new CarLeft(450, 550, 1, 50));
+	rightCar.push(new CarRight(600, 500, -1, 50));
+	rightCar.push(new CarRight(400, 500, -1, 50));
+	rightCar.push(new CarRight(50, 500, -1, 50));
+	leftCar.push(new CarLeft(0, 450, 1, 50));
+	leftCar.push(new CarLeft(100, 450, 1, 50));
+	leftCar.push(new CarLeft(400, 450, 1, 50));
+	rightCar.push(new CarRight(400, 400, -1, 50));
+	rightCar.push(new CarRight(150, 400, -1, 50));
+	leftCar.push(new CarLeft(300, 350, 1, 50));
+	leftCar.push(new CarLeft(100, 350, 1, 50));
+
+	var frogs = [];
+	frogs.push(new Frog(-5000, 0, 45, 50));
+	frogs.push(new Frog(-5000, 0, 45, 50));
+	frogs.push(new Frog(-5000, 0, 45, 50));
+	frogs.push(new Frog(-5000, 0, 45, 50));
+
+	var allLilyPads = [];
+	allLilyPads.push(new LilyPad(90, 0));
+	allLilyPads.push(new LilyPad(190, 0));
+	allLilyPads.push(new LilyPad(290, 0));
+	allLilyPads.push(new LilyPad(390, 0));
+	allLilyPads.push(new LilyPad(490, 0));
+
+	module.exports = Collision;
 
 /***/ }
 /******/ ]);
