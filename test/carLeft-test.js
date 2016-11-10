@@ -47,5 +47,4 @@ describe('CarLeft', function () {
     carLeft.move();
     assert.equal(carLeft.x, 52);
   });
-
 });
