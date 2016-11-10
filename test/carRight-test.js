@@ -44,8 +44,7 @@ describe('CarRight', function () {
 
   it('should always be moving 2px to the left', function () {
     var carRight = new CarRight(50,0,2,50);
-    carRight.move()
+    carRight.move();
     assert.equal(carRight.x, 52);
   });
-
 });
